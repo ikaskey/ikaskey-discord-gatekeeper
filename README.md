@@ -92,6 +92,12 @@ docker compose up -d --build
 - SQLite は `./data/prod.db` をバインドマウントで永続化。
 - 公開は cloudflared 側で `localhost:3001` を `ikaskey-gate.bktsk.com` に向ける（`PUBLIC_BASE_URL` と一致させる）。
 
+## 既存サーバーへの段階移行
+
+すでにメンバーがいるサーバーへは、いきなりキックせず段階的に導入します。手順は
+**[MIGRATION.md](./MIGRATION.md)** を参照（Phase 0 並走 → 認証周知 → チャンネルゲート → 任意でキック）。
+移行中は `SWEEP_ENABLED=false` でキックを停止、`/migration-status` で進捗を確認できます。
+
 ## ロードマップ
 
 | マイルストーン | 内容                                                                | 状態                    |

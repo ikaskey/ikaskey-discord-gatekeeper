@@ -142,6 +142,10 @@ async function syncRolesForMembers(
  * @since 0.2.0
  */
 export function startSweepSchedule(client: Client): void {
+  if (!config.sweep.enabled) {
+    console.log("[sweep] SWEEP_ENABLED=false のため定期検証は停止中（移行期間中のキルスイッチ）");
+    return;
+  }
   if (!cron.validate(config.sweep.cron)) {
     console.error(`[sweep] 無効な SWEEP_CRON: "${config.sweep.cron}" — スイープを開始しません`);
     return;

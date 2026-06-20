@@ -56,6 +56,21 @@ export const roleMapCommand = new SlashCommandBuilder()
   );
 
 /**
+ * `/migration-status` スラッシュコマンドの定義（段階移行の進捗確認）。
+ *
+ * @remarks
+ * 認証済み/未認証の集計と未認証者リストを表示する読み取り専用コマンド。
+ * 既定でサーバー管理権限（Manage Guild）を持つメンバーのみが実行できる。
+ *
+ * @see {@link allCommands}
+ * @since 0.5.0
+ */
+export const migrationStatusCommand = new SlashCommandBuilder()
+  .setName("migration-status")
+  .setDescription("認証済み/未認証メンバーの集計（段階移行の進捗）を表示します")
+  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild);
+
+/**
  * デプロイ対象となる全スラッシュコマンドの一覧。
  *
  * @remarks
@@ -64,6 +79,7 @@ export const roleMapCommand = new SlashCommandBuilder()
  *
  * @see {@link verifyPanelCommand}
  * @see {@link roleMapCommand}
+ * @see {@link migrationStatusCommand}
  * @since 0.1.0
  */
-export const allCommands = [verifyPanelCommand, roleMapCommand];
+export const allCommands = [verifyPanelCommand, roleMapCommand, migrationStatusCommand];

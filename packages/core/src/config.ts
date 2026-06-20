@@ -79,6 +79,12 @@ export interface AppConfig {
    * @since 0.2.0
    */
   sweep: {
+    /**
+     * 定期検証スイープ（退会連動の即キック）を有効にするか（環境変数 `SWEEP_ENABLED`、既定: `true`）。
+     * 移行期間中は `false` にしてキックを完全停止できる（キルスイッチ）。
+     * @since 0.5.0
+     */
+    enabled: boolean;
     /** スイープ実行の cron 式（環境変数 `SWEEP_CRON`、既定は 6 時間ごと = 0,6,12,18 時） */
     cron: string;
     /** 連続「消滅」確認がこの回数に達したらキック（環境変数 `SWEEP_FAILURE_THRESHOLD`、既定: `1`） */
@@ -135,6 +141,7 @@ export function loadConfig(): AppConfig {
       port: Number.parseInt(optionalEnv("WEB_PORT", "3001"), 10),
     },
     sweep: {
+      enabled: optionalEnv("SWEEP_ENABLED", "true") !== "false",
       cron: optionalEnv("SWEEP_CRON", "0 0,6,12,18 * * *"),
       failureThreshold: Number.parseInt(optionalEnv("SWEEP_FAILURE_THRESHOLD", "1"), 10),
       recheckDelayMs: Number.parseInt(optionalEnv("SWEEP_RECHECK_DELAY_MS", "3000"), 10),
