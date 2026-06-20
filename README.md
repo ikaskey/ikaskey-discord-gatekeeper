@@ -1,9 +1,9 @@
 # ikaskey-discord-gatekeeper
 
-いかすきー（Misskey: `ikaskey.bktsk.com`）のアカウント保持者だけが参加できる、**会員制Discord**のゲートキーパー。
+**Misskey** インスタンスのアカウント保持者だけが参加できる、**会員制Discord**のゲートキーパー。
 
-- ✅ いかすきーアカウントで認証した人にだけ会員ロールを付与（入会ゲート）
-- ✅ いかすきーアカウントが消滅/凍結したら自動でキック（退会連動・M3）
+- ✅ Misskeyアカウントで認証した人にだけ会員ロールを付与（入会ゲート）
+- ✅ Misskeyアカウントが消滅/凍結したら自動でキック（退会連動・M3）
 - ✅ Misskeyのロールに応じてDiscordロールを自動連動（M4。`/rolemap` または管理画面）
 - ✅ Web管理画面（M5、`/admin`。MiAuthでモデレーター/管理者ゲート。連動設定・除外リスト・監査ログ）
 
@@ -22,7 +22,7 @@ Pages → Source = "GitHub Actions"）。ローカル生成は `pnpm run docs:bu
 [Discordユーザー] ──①ボタン──▶ [bot(discord.js常駐)] ──②state発行＋認証URL(ephemeral)
                                                               │
                                                               ▼
-                            [web(Hono)] ──③MiAuthへリダイレクト──▶ [いかすきー]
+                            [web(Hono)] ──③MiAuthへリダイレクト──▶ [Misskey]
                                   │ ⑤miauth/check でtoken+user取得 ◀──④許可
                                   │ ⑥Link保存（1:1）＋会員ロール付与(REST)
                                   ▼
@@ -33,7 +33,8 @@ Pages → Source = "GitHub Actions"）。ローカル生成は `pnpm run docs:bu
 - **web** (`@gatekeeper/web`): Hono。MiAuthの開始/コールバック処理、Discordロール付与/剥奪/キックをREST(`@discordjs/rest`)で実行。
 - **core** (`@gatekeeper/core`): Misskey APIクライアント・Prisma・設定・認証フローのDB状態管理（共有）。
 
-> 設置先: **Oracle samurai-matrix (ARM64, standalone Docker, dockhand管理)**。公開は cloudflared token トンネルで `web:3001 → ikaskey-gate.bktsk.com`、管理画面は CF Access でゲート（M5）。
+> 運用: Docker で常駐。`web` をリバースプロキシ/トンネル等で公開し、`PUBLIC_BASE_URL` を一致させる。
+> 管理画面（`/admin`）は MiAuth でモデレーター/管理者をゲートする（必要なら前段の認証を併用）。
 
 ## 必要なもの
 
@@ -43,11 +44,12 @@ Pages → Source = "GitHub Actions"）。ローカル生成は `pnpm run docs:bu
 - Developer Portal → Bot → **Server Members Intent を ON**（新規参加検知に必須）
 - Bot をサーバーに招待（権限ビット `268435458` = Manage Roles + Kick Members）
   - `https://discord.com/api/oauth2/authorize?client_id=<APP_ID>&scope=bot%20applications.commands&permissions=268435458`
-- サーバーに「**いかすきー認証済み**」ロールを作成し、**Botロールをそれより上位**に配置（階層制約）
+- サーバーに「**認証済み**」ロールを作成し、**Botロールをそれより上位**に配置（階層制約）
 - `DISCORD_CLIENT_ID` / `DISCORD_GUILD_ID` / `VERIFIED_ROLE_ID` を控える
 
-### いかすきー側
+### Misskey 側
 
+- 対象インスタンスのホスト名を `MISSKEY_HOST` に設定。
 - MiAuth は `read:account` のみ要求（書き込み権限は不要）。一般ユーザーが許可するだけで動作。
 
 ## 前提
@@ -81,7 +83,7 @@ pnpm test        # Vitest
 pnpm build       # 本番ビルド（core=tsc / bot,web=tsup）
 ```
 
-## デプロイ（Oracle samurai-matrix / Docker）
+## デプロイ（Docker）
 
 ```bash
 cp .env.example .env   # 本番値。DATABASE_URL=file:/data/prod.db に変更
@@ -90,7 +92,8 @@ docker compose up -d --build
 
 - `migrate` サービスが起動前に `prisma migrate deploy` を適用 → `web`/`bot` が起動。
 - SQLite は `./data/prod.db` をバインドマウントで永続化。
-- 公開は cloudflared 側で `localhost:3001` を `ikaskey-gate.bktsk.com` に向ける（`PUBLIC_BASE_URL` と一致させる）。
+- `web` は `127.0.0.1:3001` で待ち受ける。任意のリバースプロキシ/トンネルで公開し、
+  公開URLを `PUBLIC_BASE_URL` に一致させる。
 
 ## 既存サーバーへの段階移行
 
