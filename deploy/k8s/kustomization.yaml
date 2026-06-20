@@ -1,0 +1,23 @@
+# ステージング/検証用の一括適用エントリ。
+#   kubectl apply -f deploy/k8s/secret.yaml    # 先にシークレット（gitignore）
+#   kubectl apply -k deploy/k8s/               # 残りを一括適用
+#
+# images.newTag でイメージタグを1か所で切り替える（既定はブランチビルドの sha タグ）。
+# 本番カットオーバー時は latest（main の Postgres 版）等に変更する。
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - 00-namespace.yaml
+  - 20-postgres.yaml
+  - 30-migrate-job.yaml
+  - 40-web.yaml
+  - 50-bot.yaml
+
+images:
+  - name: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-web
+    newTag: sha-2a7a489
+  - name: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-bot
+    newTag: sha-2a7a489
+  - name: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-migrate
+    newTag: sha-2a7a489

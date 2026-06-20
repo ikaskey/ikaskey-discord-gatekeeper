@@ -14,6 +14,16 @@ spec:
   template:
     spec:
       restartPolicy: OnFailure
+      # postgres が受け付けるまで待ってから migrate を流す（apply 順に依存しない）
+      initContainers:
+        - name: wait-postgres
+          image: postgres:16-alpine
+          command:
+            [
+              "sh",
+              "-c",
+              "until pg_isready -h postgres -p 5432; do echo waiting for postgres; sleep 2; done",
+            ]
       containers:
         - name: migrate
           image: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-migrate:latest
