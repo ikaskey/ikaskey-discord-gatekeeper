@@ -226,7 +226,7 @@ joinApp.get("/misskey/callback", async (c) => {
     summary: `自動参加＋認証: @${user.username}`,
     targetDiscordId: st.discordId,
   }).catch(() => {});
-  return c.html(successPage(user.username));
+  return c.html(successPage(user.username, config.discord.serverUrl));
 });
 
 /** Discord OAuth で特定したユーザーの認証 state を発行（アクセストークン保持） */

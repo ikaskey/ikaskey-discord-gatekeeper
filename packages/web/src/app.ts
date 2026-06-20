@@ -219,7 +219,7 @@ app.get("/auth/misskey/callback", async (c) => {
     summary: `認証完了: @${user.username}`,
     targetDiscordId: st.discordId,
   }).catch(() => {});
-  return c.html(successPage(user.username));
+  return c.html(successPage(user.username, config.discord.serverUrl));
 });
 
 /**

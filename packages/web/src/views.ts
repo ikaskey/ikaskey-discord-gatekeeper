@@ -54,6 +54,9 @@ ${brandHeadTags(title)}
   p { line-height: 1.7; color: #aeb8c2; }
   .ok { color: #86b300; }
   .err { color: #f85149; }
+  .btn { display: inline-block; margin-top: 1rem; padding: .7rem 1.4rem; border-radius: .6rem; background: #86b300; color: #0d1117; font-weight: 700; text-decoration: none; }
+  .btn:hover { background: #9bce00; }
+  .hint { font-size: .85rem; color: #6e7681; }
 </style>
 </head>
 <body>
@@ -66,23 +69,31 @@ ${brandHeadTags(title)}
  * 認証成功ページの HTML を生成する。
  *
  * @param username - 認証された いかすきー ユーザー名(`@` なし。内部でエスケープされる)
+ * @param serverUrl - 認証後に誘導する Discord サーバーの URL（任意）。指定時は
+ *   「サーバーを開く」ボタンと数秒後の自動リダイレクトを付与する（`https:` のみ許可）。
  * @returns 認証完了メッセージを含む完全な HTML ドキュメント
  * @remarks
  * MiAuth コールバック成功時(token 確定 → Link 保存 → ロール付与の完了後)に返す。
  * @example
  * ```ts
- * return c.html(successPage(user.username));
+ * return c.html(successPage(user.username, config.discord.serverUrl));
  * ```
  * @see {@link errorPage}
  * @since 0.1.0
  */
-export function successPage(username: string): string {
+export function successPage(username: string, serverUrl?: string): string {
+  const safeUrl = serverUrl && /^https:\/\//i.test(serverUrl) ? serverUrl : "";
+  const cta = safeUrl
+    ? `<p><a class="btn" href="${escapeHtml(safeUrl)}">Discordサーバーを開く</a></p>
+     <p class="hint">まもなく自動的にDiscordサーバーへ移動します…</p>
+     <script>setTimeout(function(){location.href=${JSON.stringify(safeUrl)};},2500);</script>`
+    : `<p class="hint">このタブは閉じて構いません。</p>`;
   return page(
     "認証完了",
     `<h1 class="ok">✅ 認証が完了しました</h1>
      <p><strong>@${escapeHtml(username)}</strong> として認証されました。<br />
-     Discordに戻ると会員チャンネルが見えるようになっています。<br />
-     このタブは閉じて構いません。</p>`,
+     会員チャンネルが見えるようになっています。</p>
+     ${cta}`,
   );
 }
 
