@@ -32,6 +32,7 @@ import {
 } from "@gatekeeper/core";
 import { adminApp } from "./admin.js";
 import { addGuildMemberRole, getGuildMemberRoleIds, removeGuildMemberRole } from "./discord.js";
+import { joinApp } from "./join.js";
 import { errorPage, successPage } from "./views.js";
 
 const config = loadConfig();
@@ -58,6 +59,9 @@ app.get("/healthz", (c) => c.json({ ok: true }));
 
 // 管理画面（M5）を /admin 配下にマウント
 app.route("/admin", adminApp);
+
+// 未参加ユーザーの自動参加フロー（M6）を /join 配下にマウント
+app.route("/join", joinApp);
 
 /**
  * GET `/auth/misskey/start` — 認証開始。

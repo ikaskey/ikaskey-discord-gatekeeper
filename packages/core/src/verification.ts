@@ -36,6 +36,7 @@ export class MisskeyAlreadyLinkedError extends Error {
  * @param input - 発行パラメータ
  * @param input.discordId - 認証を開始した Discord ユーザー ID
  * @param input.guildId - 対象の Guild ID
+ * @param input.discordAccessToken - 自動参加(M6)用の Discord OAuth2 アクセストークン（任意）
  * @param input.ttlMs - 有効期限（ミリ秒）。省略時は 10 分
  * @returns 発行された nonce 文字列
  *
@@ -52,6 +53,7 @@ export class MisskeyAlreadyLinkedError extends Error {
 export async function createVerificationState(input: {
   discordId: string;
   guildId: string;
+  discordAccessToken?: string;
   ttlMs?: number;
 }): Promise<string> {
   const nonce = generateNonce();
@@ -61,6 +63,7 @@ export async function createVerificationState(input: {
       nonce,
       discordId: input.discordId,
       guildId: input.guildId,
+      discordAccessToken: input.discordAccessToken ?? null,
       expiresAt,
     },
   });

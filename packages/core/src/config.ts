@@ -58,6 +58,12 @@ export interface AppConfig {
     guildId: string;
     /** 認証完了時に付与するロールの ID（環境変数 `VERIFIED_ROLE_ID`） */
     verifiedRoleId: string;
+    /**
+     * Discord OAuth2 の Client Secret（環境変数 `DISCORD_CLIENT_SECRET`）。
+     * 未設定なら未参加ユーザーの自動参加フロー(M6)は無効。
+     * @since 0.7.0
+     */
+    clientSecret: string;
   };
   /** Misskey 連携に関する設定 */
   misskey: {
@@ -143,6 +149,7 @@ export function loadConfig(): AppConfig {
       clientId: requireEnv("DISCORD_CLIENT_ID"),
       guildId: requireEnv("DISCORD_GUILD_ID"),
       verifiedRoleId: requireEnv("VERIFIED_ROLE_ID"),
+      clientSecret: optionalEnv("DISCORD_CLIENT_SECRET", ""),
     },
     misskey: {
       host: requireEnv("MISSKEY_HOST"),

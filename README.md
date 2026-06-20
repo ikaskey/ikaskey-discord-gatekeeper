@@ -6,6 +6,7 @@
 - ✅ Misskeyアカウントが消滅/凍結したら自動でキック（退会連動・M3）
 - ✅ Misskeyのロールに応じてDiscordロールを自動連動（M4。`/rolemap` または管理画面）
 - ✅ Web管理画面（M5、`/admin`。MiAuthでモデレーター/管理者ゲート。連動設定・除外リスト・監査ログ）
+- ✅ 未参加ユーザーの自動参加（M6、`/join`。Discord OAuth2 + Misskey認証でサーバーへ自動参加。要 `DISCORD_CLIENT_SECRET`）
 
 ## ドキュメント
 
