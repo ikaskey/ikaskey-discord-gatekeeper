@@ -2,7 +2,17 @@ import { randomBytes } from "node:crypto";
 import { prisma } from "./db.js";
 import type { Allowlist, AuditLog } from "./db.js";
 
-const ADMIN_SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 管理セッションの有効期限: 12時間
+/**
+ * 管理セッションの有効期限（ミリ秒）。既定 7 日。
+ *
+ * @remarks
+ * {@link touchAdminSession} により操作のたびに延長される（ローリング/スライディング）。
+ * したがってこれは「最終操作からの idle タイムアウト」として働く。web の Cookie `maxAge` も
+ * この値に合わせる。
+ *
+ * @since 0.9.2
+ */
+export const ADMIN_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * 管理画面のログインセッションを作成する（MiAuth 認証成功後）。
@@ -49,6 +59,28 @@ export async function getValidAdminSession(
   if (!s) return null;
   if (s.expiresAt.getTime() < Date.now()) return null;
   return { misskeyId: s.misskeyId, username: s.username, token: s.token };
+}
+
+/**
+ * 管理セッションの有効期限を「現在時刻 + TTL」へ延長する（ローリング）。
+ *
+ * @remarks
+ * 認証済みの操作（`/admin/api/*`）のたびに呼び、アクティブな管理者を維持する。
+ * 該当が無くてもエラーにしない。
+ *
+ * @param id - セッション ID
+ * @param ttlMs - 延長幅（既定 {@link ADMIN_SESSION_TTL_MS}）
+ * @returns 完了を表す Promise
+ * @since 0.9.2
+ */
+export async function touchAdminSession(
+  id: string,
+  ttlMs: number = ADMIN_SESSION_TTL_MS,
+): Promise<void> {
+  await prisma.adminSession.updateMany({
+    where: { id },
+    data: { expiresAt: new Date(Date.now() + ttlMs) },
+  });
 }
 
 /**

@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import { serveStatic } from "@hono/node-server/serve-static";
 import {
+  ADMIN_SESSION_TTL_MS,
   createAdminSession,
   deleteAdminSession,
   deleteAllowlist,
@@ -14,6 +15,7 @@ import {
   listLinks,
   listRoleMappings,
   loadConfig,
+  touchAdminSession,
   MisskeyClient,
   newMiauthSession,
   TokenInvalidError,
@@ -112,7 +114,10 @@ adminApp.get("/auth/callback", async (c) => {
       username: me.username,
       token,
     });
-    await setSignedCookie(c, SESSION_COOKIE, id, SECRET, { ...COOKIE_OPTS, maxAge: 12 * 3600 });
+    await setSignedCookie(c, SESSION_COOKIE, id, SECRET, {
+      ...COOKIE_OPTS,
+      maxAge: ADMIN_SESSION_TTL_MS / 1000,
+    });
     await writeAudit({
       type: "admin_login",
       summary: `管理ログイン: @${me.username}`,
@@ -125,12 +130,18 @@ adminApp.get("/auth/callback", async (c) => {
   }
 });
 
-// /api/* はセッション必須
+// /api/* はセッション必須。アクセスのたびにセッションを延長する（ローリング）。
 adminApp.use("/api/*", async (c, next) => {
   const id = await getSignedCookie(c, SECRET, SESSION_COOKIE);
   const admin = id ? await getValidAdminSession(id) : null;
-  if (!admin) return c.json({ error: "unauthorized" }, 401);
+  if (!id || !admin) return c.json({ error: "unauthorized" }, 401);
   c.set("admin", admin);
+  // ローリング: 有効期限を延長し、Cookie も貼り直して idle タイムアウトを起点リセット
+  await touchAdminSession(id);
+  await setSignedCookie(c, SESSION_COOKIE, id, SECRET, {
+    ...COOKIE_OPTS,
+    maxAge: ADMIN_SESSION_TTL_MS / 1000,
+  });
   await next();
 });
 

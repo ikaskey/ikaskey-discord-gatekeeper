@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-06-21
+
+### Changed
+
+- 管理画面セッションの有効期限を **12時間（ログイン起点・固定）→ 7日（最終操作起点・ローリング）** に変更。
+  `/admin/api/*` の操作のたびにセッションと Cookie を延長（`touchAdminSession`）。アクティブな間は
+  ログインが切れず、idle が続いた場合のみ失効する。
+
 ## [0.9.1] - 2026-06-21
 
 ### Added
@@ -243,7 +251,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.9.2...HEAD
+[0.9.2]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.10...v0.9.0
 [0.8.10]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.9...v0.8.10
