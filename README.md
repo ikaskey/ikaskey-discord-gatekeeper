@@ -29,27 +29,25 @@ flowchart TD
     MK([Misskey])
     DB[("SQLite（Prisma）")]
     SWEEP["定期検証ジョブ（退会連動）"]
-
-    U -->|"①認証ボタン押下"| BOT
-    BOT -->|"②state 発行＋認証 URL（ephemeral）"| U
-    U -->|"認証 URL を開く"| WEB
-    WEB -->|"③MiAuth へリダイレクト"| MK
-    MK -->|"④ユーザーが許可"| WEB
-    WEB -->|"⑤miauth/check で token+user 取得"| MK
-    WEB -->|"⑥Link 保存（1:1）＋会員ロール付与（REST）"| DB
-    SWEEP -->|"消滅/凍結を検知 → キック"| DB
+    U -->|①認証ボタン押下| BOT
+    BOT -->|②state発行＋認証URL ephemeral| U
+    U -->|認証URLを開く| WEB
+    WEB -->|③MiAuthへリダイレクト| MK
+    MK -->|④ユーザーが許可| WEB
+    WEB -->|⑤miauth/check で token+user取得| MK
+    WEB -->|⑥Link保存 1対1 ＋会員ロール付与 REST| DB
+    SWEEP -->|消滅/凍結を検知してキック| DB
 ```
 
 ### パッケージ構成
 
 ```mermaid
 flowchart LR
-    admin["@gatekeeper/admin-ui<br/>React SPA（管理画面）"]
-    bot["@gatekeeper/bot<br/>discord.js 常駐"]
-    web["@gatekeeper/web<br/>Hono（認証/管理 API）"]
-    core["@gatekeeper/core<br/>Misskey クライアント・Prisma・設定"]
-
-    admin -->|配信される| web
+    admin["@gatekeeper/admin-ui 管理画面SPA"]
+    bot["@gatekeeper/bot discord.js常駐"]
+    web["@gatekeeper/web Hono 認証/管理API"]
+    core["@gatekeeper/core Misskeyクライアント・Prisma・設定"]
+    admin -->|配信| web
     bot --> core
     web --> core
 ```

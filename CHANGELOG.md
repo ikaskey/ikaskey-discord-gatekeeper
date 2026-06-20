@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+## [0.8.9] - 2026-06-21
+
+### Fixed
+
+- GitHub Pages（TypeDoc）で Mermaid 図が描画エラーになる不具合を修正。`typedoc-plugin-mermaid` が
+  ブロック内の**空行で分割**しエッジ(`-->`)が別の `<pre><code>` に追い出され二重エスケープされていた。
+  図から空行を除去し、ラベルを簡素化（`<br/>`・エッジラベルの引用符を回避）。
+
 ## [0.8.8] - 2026-06-20
 
 ### Changed
@@ -208,7 +216,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.8...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.9...HEAD
+[0.8.9]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.8...v0.8.9
 [0.8.8]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.7...v0.8.8
 [0.8.7]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.6...v0.8.7
 [0.8.6]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.5...v0.8.6
