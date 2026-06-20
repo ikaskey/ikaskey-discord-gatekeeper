@@ -33,6 +33,7 @@ import {
 import { adminApp } from "./admin.js";
 import { addGuildMemberRole, getGuildMemberRoleIds, removeGuildMemberRole } from "./discord.js";
 import { joinApp } from "./join.js";
+import { syncMisskeyModAdminRoles } from "./rolesync.js";
 import { errorPage, successPage } from "./views.js";
 
 const config = loadConfig();
@@ -208,6 +209,9 @@ app.get("/auth/misskey/callback", async (c) => {
   } catch (err) {
     console.error("[web] role sync failed", err);
   }
+
+  // 5) Misskeyモデレーター/管理者 → Discordロール連動（M7）
+  await syncMisskeyModAdminRoles(st.guildId, st.discordId, token);
 
   await consumeState(nonce);
   await writeAudit({

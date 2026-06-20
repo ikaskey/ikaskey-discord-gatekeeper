@@ -6,6 +6,8 @@
  * ユーザー入力(ユーザー名など)は必ず {@link escapeHtml} を通して埋め込む。
  */
 
+import { brandHeadTags } from "./brand.js";
+
 /**
  * HTML 特殊文字をエスケープし、XSS を防ぐための内部ヘルパー。
  *
@@ -43,6 +45,7 @@ function page(title: string, bodyHtml: string): string {
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>${escapeHtml(title)}</title>
+${brandHeadTags(title)}
 <style>
   :root { color-scheme: light dark; }
   body { font-family: system-ui, -apple-system, "Hiragino Sans", sans-serif; display: grid; place-items: center; min-height: 100dvh; margin: 0; background: #0d1117; color: #e6edf3; }

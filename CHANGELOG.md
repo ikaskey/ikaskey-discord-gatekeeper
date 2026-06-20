@@ -7,6 +7,20 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-06-20
+
+### Added
+
+- **M7: Misskey 判定による認可とロール連動**
+  - スラッシュコマンドの実行可否を **Misskey のモデレーター/管理者**(`/api/i` の `isModerator` / `isAdministrator`、その時点の値)で判定。Discord のサーバー管理者は常に許可(ロックアウト防止)。
+  - **Misskey のモデレーター/管理者 → 任意の Discord ロール**を連動(`MISSKEY_MODERATOR_ROLE_ID` / `MISSKEY_ADMIN_ROLE_ID`)。認証/自動参加時に同期。`computeModAdminRoleSync`(純関数・テスト付き)。
+- **ブランディングを env で差し替え可能に**(`BRAND_FAVICON_URL` / `BRAND_OG_IMAGE_URL` / `BRAND_OG_TITLE` / `BRAND_OG_DESCRIPTION` / `BRAND_THEME_COLOR`)。管理画面・参加ページ・認証結果ページにファビコン/OGP を反映。
+
+### Changed
+
+- スラッシュコマンドの説明文を利用者向けに分かりやすく調整。
+- コマンドの可視性ゲートを外し、実行可否は各ハンドラの Misskey 判定に一本化。
+
 ## [0.7.2] - 2026-06-20
 
 ### Changed
@@ -121,7 +135,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.6.0...v0.7.0

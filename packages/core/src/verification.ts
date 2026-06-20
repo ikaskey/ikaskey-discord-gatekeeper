@@ -154,6 +154,17 @@ export async function consumeState(nonce: string): Promise<void> {
  *
  * @since 0.1.0
  */
+/**
+ * Discord ユーザー ID から {@link Link}（認証済み連携）を取得する。
+ *
+ * @param discordId - 対象 Discord ユーザー ID
+ * @returns 連携が存在すれば {@link Link}、無ければ `null`
+ * @since 0.8.0
+ */
+export function findLinkByDiscordId(discordId: string): Promise<Link | null> {
+  return prisma.link.findUnique({ where: { discordId } });
+}
+
 export async function upsertLink(input: {
   discordId: string;
   guildId: string;

@@ -109,3 +109,36 @@ export function upsertRoleMapping(input: {
 export function deleteRoleMapping(misskeyRoleId: string): Promise<unknown> {
   return prisma.roleMapping.delete({ where: { misskeyRoleId } });
 }
+
+/**
+ * Misskey のモデレーター/管理者フラグから、連動 Discord ロールの差分を計算する純関数（M7）。
+ *
+ * @remarks
+ * `moderatorRoleId` / `adminRoleId` が空文字（未設定）の場合、そのロールは一切操作しない。
+ * 設定されている場合のみ、保有すべきか（isModerator/isAdministrator）に応じて追加/剥奪を決める。
+ * 管理対象はこの 2 ロールのみで、他のロールには触れない。
+ *
+ * @param input - 判定入力
+ * @returns 追加・剥奪する Discord ロール ID
+ *
+ * @since 0.8.0
+ */
+export function computeModAdminRoleSync(input: {
+  isModerator: boolean;
+  isAdministrator: boolean;
+  moderatorRoleId: string;
+  adminRoleId: string;
+  currentRoleIds: ReadonlySet<string>;
+}): { toAdd: string[]; toRemove: string[] } {
+  const toAdd: string[] = [];
+  const toRemove: string[] = [];
+  const apply = (roleId: string, should: boolean): void => {
+    if (!roleId) return;
+    const has = input.currentRoleIds.has(roleId);
+    if (should && !has) toAdd.push(roleId);
+    else if (!should && has) toRemove.push(roleId);
+  };
+  apply(input.moderatorRoleId, input.isModerator);
+  apply(input.adminRoleId, input.isAdministrator);
+  return { toAdd, toRemove };
+}

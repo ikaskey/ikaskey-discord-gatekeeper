@@ -385,6 +385,36 @@ export class MisskeyClient {
       return false;
     }
   }
+
+  /**
+   * トークンで本人の認可レベル（存在＋モデレーター/管理者）を取得する。
+   *
+   * @remarks
+   * `/api/i` を呼び、Misskey 側の最新の `isModerator` / `isAdministrator` を反映する。
+   * トークンが失効/削除済み（401）の場合は `exists: false` を返す。
+   *
+   * @param token - 対象ユーザーの MiAuth トークン
+   * @returns 存在有無とモデレーター/管理者フラグ
+   * @throws 429・5xx・ネットワーク等は呼び出し側で扱う
+   * @since 0.8.0
+   */
+  async checkAuthLevel(
+    token: string,
+  ): Promise<{ exists: boolean; isModerator: boolean; isAdministrator: boolean }> {
+    try {
+      const me = await this.getMe(token);
+      return {
+        exists: true,
+        isModerator: Boolean(me.isModerator),
+        isAdministrator: Boolean(me.isAdministrator),
+      };
+    } catch (err) {
+      if (err instanceof TokenInvalidError) {
+        return { exists: false, isModerator: false, isAdministrator: false };
+      }
+      throw err;
+    }
+  }
 }
 
 async function safeJson(res: Response): Promise<unknown> {

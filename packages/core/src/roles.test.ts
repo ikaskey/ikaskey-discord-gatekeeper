@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeRoleSync } from "./roles.js";
+import { computeModAdminRoleSync, computeRoleSync } from "./roles.js";
 import type { RoleMapping } from "./db.js";
 
 function mapping(misskeyRoleId: string, discordRoleId: string): RoleMapping {
@@ -34,5 +34,40 @@ describe("computeRoleSync", () => {
     const plan = computeRoleSync(new Set<string>(), mappings, new Set(["D1", "D2"]));
     expect(plan.toAdd).toEqual([]);
     expect(plan.toRemove.sort()).toEqual(["D1", "D2"]);
+  });
+});
+
+describe("computeModAdminRoleSync", () => {
+  const base = { moderatorRoleId: "MOD", adminRoleId: "ADM" };
+  it("モデレーターにはMOD、管理者にはADMを付与", () => {
+    const p = computeModAdminRoleSync({
+      ...base,
+      isModerator: true,
+      isAdministrator: true,
+      currentRoleIds: new Set<string>(),
+    });
+    expect(p.toAdd.sort()).toEqual(["ADM", "MOD"]);
+    expect(p.toRemove).toEqual([]);
+  });
+  it("権限喪失で剥奪", () => {
+    const p = computeModAdminRoleSync({
+      ...base,
+      isModerator: false,
+      isAdministrator: false,
+      currentRoleIds: new Set(["MOD", "ADM"]),
+    });
+    expect(p.toAdd).toEqual([]);
+    expect(p.toRemove.sort()).toEqual(["ADM", "MOD"]);
+  });
+  it("未設定(空文字)のロールは操作しない", () => {
+    const p = computeModAdminRoleSync({
+      moderatorRoleId: "",
+      adminRoleId: "",
+      isModerator: true,
+      isAdministrator: true,
+      currentRoleIds: new Set<string>(),
+    });
+    expect(p.toAdd).toEqual([]);
+    expect(p.toRemove).toEqual([]);
   });
 });
