@@ -60,3 +60,34 @@ model Allowlist {
   reason    String
   createdAt DateTime @default(now())
 }
+
+/// 管理画面のログインセッション（MiAuth認証・モデレーター/管理者ゲート。M5）
+model AdminSession {
+  /// Cookie に載るセッションID（推測不能）
+  id          String   @id
+  misskeyId   String
+  username    String
+  /// roles/list 等の呼び出しに使う MiAuth トークン
+  token       String
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+
+  @@index([expiresAt])
+}
+
+/// 監査ログ（認証・キック・ロール同期・設定変更の記録。M5で閲覧）
+model AuditLog {
+  id              Int      @id @default(autoincrement())
+  at              DateTime @default(now())
+  /// auth / kick / role_sync / mapping_change / allowlist_change など
+  type            String
+  /// 操作者（管理画面操作なら管理者の misskeyId、システムなら null）
+  actor           String?
+  /// 対象の Discord ユーザーID（該当する場合）
+  targetDiscordId String?
+  /// 人間可読の要約
+  summary         String
+
+  @@index([at])
+  @@index([type])
+}
