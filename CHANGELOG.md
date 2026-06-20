@@ -7,6 +7,13 @@
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-06-20
+
+### Changed
+
+- `/migration-status` と `/migration-purge` の既定権限を「メンバーをキック(Kick Members)」へ変更
+  （= モデレーター以上が実行可能）。設定系(`/verify-panel` `/rolemap`)は引き続きサーバー管理権限。
+
 ## [0.7.1] - 2026-06-20
 
 ### Changed
@@ -114,7 +121,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.5.0...v0.6.0
