@@ -24,6 +24,13 @@ import { handleMigrationPurge, handleMigrationStatus } from "./migration.js";
 import { sendVerifyPanel, VERIFY_BUTTON_ID } from "./panel.js";
 import { handleRoleMap } from "./rolemap.js";
 import { startSweepSchedule } from "./sweep.js";
+import {
+  handleUnlink,
+  handleUnlinkCancel,
+  handleUnlinkConfirm,
+  UNLINK_CANCEL_ID,
+  UNLINK_CONFIRM_PREFIX,
+} from "./unlink.js";
 
 const config = loadConfig();
 
@@ -94,6 +101,24 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     if (interaction.isChatInputCommand() && interaction.commandName === "migration-purge") {
       if (!(await requireMisskeyLevel(interaction, "moderator"))) return;
       await handleMigrationPurge(interaction);
+      return;
+    }
+
+    // /unlink: 指定ユーザーの連携解除（モデレーター以上・確認ボタン付き）
+    if (interaction.isChatInputCommand() && interaction.commandName === "unlink") {
+      if (!(await requireMisskeyLevel(interaction, "moderator"))) return;
+      await handleUnlink(interaction);
+      return;
+    }
+
+    // 連携解除の確認ボタン（モデレーター以上を再判定）
+    if (interaction.isButton() && interaction.customId.startsWith(UNLINK_CONFIRM_PREFIX)) {
+      if (!(await requireMisskeyLevel(interaction, "moderator"))) return;
+      await handleUnlinkConfirm(interaction);
+      return;
+    }
+    if (interaction.isButton() && interaction.customId === UNLINK_CANCEL_ID) {
+      await handleUnlinkCancel(interaction);
       return;
     }
 

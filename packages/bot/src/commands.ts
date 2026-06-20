@@ -105,6 +105,24 @@ export const migrationPurgeCommand = new SlashCommandBuilder()
   );
 
 /**
+ * `/unlink` スラッシュコマンドの定義（特定ユーザーの連携解除）。
+ *
+ * @remarks
+ * 指定した Discord ユーザーの連携（Link）を解除する。実行時に確認ボタンを挟む。実行可否は
+ * 実行時に判定する（Discord 管理者、またはいかすきーのモデレーター以上）。解除後、対象者は
+ * 別の Misskey アカウントで認証し直せる。
+ *
+ * @see {@link allCommands}
+ * @since 0.8.6
+ */
+export const unlinkCommand = new SlashCommandBuilder()
+  .setName("unlink")
+  .setDescription("指定ユーザーのいかすきー連携を解除します（確認あり・モデレーター用）")
+  .addUserOption((o) =>
+    o.setName("user").setDescription("連携を解除する対象のメンバー").setRequired(true),
+  );
+
+/**
  * デプロイ対象となる全スラッシュコマンドの一覧。
  *
  * @remarks
@@ -116,6 +134,7 @@ export const migrationPurgeCommand = new SlashCommandBuilder()
  * @see {@link roleMapCommand}
  * @see {@link migrationStatusCommand}
  * @see {@link migrationPurgeCommand}
+ * @see {@link unlinkCommand}
  * @since 0.1.0
  */
 export const allCommands = [
@@ -123,4 +142,5 @@ export const allCommands = [
   roleMapCommand,
   migrationStatusCommand,
   migrationPurgeCommand,
+  unlinkCommand,
 ];

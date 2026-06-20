@@ -1,5 +1,5 @@
 import { MessageFlags, PermissionFlagsBits } from "discord.js";
-import type { ChatInputCommandInteraction } from "discord.js";
+import type { ButtonInteraction, ChatInputCommandInteraction } from "discord.js";
 import { findLinkByDiscordId, loadConfig, MisskeyClient } from "@gatekeeper/core";
 
 const config = loadConfig();
@@ -8,7 +8,10 @@ const misskey = new MisskeyClient(config.misskey.host);
 /** 要求する認可レベル。`moderator` はモデレーター以上、`administrator` は管理者のみ。 */
 export type AuthLevel = "moderator" | "administrator";
 
-async function reject(interaction: ChatInputCommandInteraction, message: string): Promise<void> {
+/** 認可チェック対象となるインタラクション（スラッシュコマンド／ボタン）。 */
+type GatedInteraction = ChatInputCommandInteraction | ButtonInteraction;
+
+async function reject(interaction: GatedInteraction, message: string): Promise<void> {
   const opts = { content: message, flags: MessageFlags.Ephemeral } as const;
   if (interaction.replied || interaction.deferred) {
     await interaction.followUp(opts).catch(() => {});
@@ -36,7 +39,7 @@ async function reject(interaction: ChatInputCommandInteraction, message: string)
  * @since 0.8.0
  */
 export async function requireMisskeyLevel(
-  interaction: ChatInputCommandInteraction,
+  interaction: GatedInteraction,
   level: AuthLevel,
 ): Promise<boolean> {
   // 1) Discord サーバー管理者は常に許可
