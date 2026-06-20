@@ -1,6 +1,6 @@
 {
   "name": "@gatekeeper/docs",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "typedoc": "^0.28.0",
+    "typedoc-plugin-mermaid": "^1.12.0",
     "typescript": "~5.9.3"
   }
 }
