@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+  // 生成物を core パッケージ内に出力 → pnpm deploy で確実に同梱される（モノレポ対策）
+  output   = "../src/generated/prisma"
+  // native = ローカル(darwin-arm64等) / linux-arm64-openssl-3.0.x = Oracle ARM64 Docker(node:22-slim)
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Discord ユーザー ↔ いかすきー(Misskey)ユーザー の紐付け
+model Link {
+  discordId     String    @id
+  guildId       String
+  misskeyId     String    @unique
+  username      String
+  misskeyHost   String?
+  /// MiAuth トークン（M3でトークン失効検知に使用。任意保存）
+  token         String?
+  /// active / pending_kick / kicked
+  status        String    @default("active")
+  /// 連続検証失敗カウント（誤検知対策の安全弁。M3で使用）
+  failureCount  Int       @default(0)
+  linkedAt      DateTime  @default(now())
+  lastCheckedAt DateTime?
+
+  @@index([status])
+}
+
+/// 認証フローの一時状態。ボタン押下(bot)とMiAuthコールバック(web)を結ぶ
+model VerificationState {
+  /// 推測不能なnonce（URLに載るのはこれだけ）
+  nonce          String    @id
+  discordId      String
+  guildId        String
+  /// /start で採番する MiAuth セッションUUID
+  misskeySession String?
+  createdAt      DateTime  @default(now())
+  expiresAt      DateTime
+  consumedAt     DateTime?
+
+  @@index([expiresAt])
+}
+
+/// Misskeyロール → Discordロール の連動設定（管理画面で編集。M4で使用）
+model RoleMapping {
+  misskeyRoleId   String  @id
+  misskeyRoleName String
+  discordRoleId   String
+  enabled         Boolean @default(true)
+  autoSync        Boolean @default(true)
+}
+
+/// 検証除外リスト（モデレーター等。M3で使用）
+model Allowlist {
+  discordId String   @id
+  reason    String
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,57 @@
+# Oracle samurai-matrix(ARM64) 上で dockhand 管理を想定。
+# 公開は cloudflared token トンネルで web:3001 → ikaskey-gate.bktsk.com に向ける。
+services:
+  # 起動前にマイグレーションを適用する一時ジョブ
+  migrate:
+    build:
+      context: .
+      target: migrate
+    environment:
+      - DATABASE_URL=file:/data/prod.db
+    volumes:
+      - ./data:/data
+    restart: "no"
+
+  web:
+    build:
+      context: .
+      target: web
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/data/prod.db
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_GUILD_ID=${DISCORD_GUILD_ID}
+      - VERIFIED_ROLE_ID=${VERIFIED_ROLE_ID}
+      - MISSKEY_HOST=${MISSKEY_HOST:-ikaskey.bktsk.com}
+      - MISSKEY_APP_NAME=${MISSKEY_APP_NAME:-いかすきー会員認証}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
+      - WEB_PORT=3001
+    ports:
+      - "127.0.0.1:3001:3001" # cloudflared が localhost:3001 を拾う
+    volumes:
+      - ./data:/data
+
+  bot:
+    build:
+      context: .
+      target: bot
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/data/prod.db
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_GUILD_ID=${DISCORD_GUILD_ID}
+      - VERIFIED_ROLE_ID=${VERIFIED_ROLE_ID}
+      - MISSKEY_HOST=${MISSKEY_HOST:-ikaskey.bktsk.com}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
+    volumes:
+      - ./data:/data

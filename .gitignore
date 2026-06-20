@@ -1,0 +1,21 @@
+node_modules/
+dist/
+*.log
+
+# env
+.env
+.env.local
+
+# SQLite データ（開発DB・永続データともリポジトリには含めない）
+*.db
+*.db-shm
+*.db-wal
+
+# Prisma 生成物
+packages/core/src/generated/
+
+# OS
+.DS_Store
+
+# ローカルのbuildx不全回避用に生成する検証用Dockerfile（リポジトリには含めない）
+Dockerfile.legacy
