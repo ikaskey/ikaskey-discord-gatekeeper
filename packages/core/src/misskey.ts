@@ -7,39 +7,98 @@
  *  - 公開ロール: users/show の roles[] / 一覧は POST /api/roles/list（read:account）
  */
 
+/**
+ * Misskey の公開ロール情報。
+ *
+ * @remarks
+ * `users/show` の `roles[]` や `roles/list` から返される。
+ *
+ * @since 0.1.0
+ */
 export interface MisskeyRole {
+  /** ロール ID */
   id: string;
+  /** ロール名 */
   name: string;
+  /** 表示色（未設定時は `null`） */
   color: string | null;
+  /** アイコン画像 URL（未設定時は `null`） */
   iconUrl: string | null;
+  /** ロールの説明 */
   description: string;
+  /** モデレーター権限を持つロールか */
   isModerator: boolean;
+  /** 管理者権限を持つロールか */
   isAdministrator: boolean;
+  /** 表示順（昇順） */
   displayOrder: number;
 }
 
+/**
+ * Misskey のユーザー情報。
+ *
+ * @remarks
+ * `users/show` / `i` から返される主要フィールドを表す。
+ *
+ * @since 0.1.0
+ */
 export interface MisskeyUser {
+  /** ユーザー ID */
   id: string;
+  /** ユーザー名（`@` 以降のローカル名） */
   username: string;
+  /** 表示名（未設定時は `null`） */
   name: string | null;
+  /** リモートホスト名。ローカルユーザーは `null` */
   host: string | null;
+  /** アバター画像 URL（未設定時は `null`） */
   avatarUrl: string | null;
+  /** 公開ロール一覧（取得しない場合は省略） */
   roles?: MisskeyRole[];
+  /** Bot アカウントか */
   isBot?: boolean;
+  /** アカウント作成日時（ISO 8601 文字列） */
   createdAt?: string;
 }
 
+/**
+ * MiAuth の `miauth/check` 呼び出し結果。
+ *
+ * @remarks
+ * `ok` が `false` の場合は未認可または無効なセッション。
+ *
+ * @since 0.1.0
+ */
 export interface MiauthCheckResult {
+  /** 認可が完了したか */
   ok: boolean;
+  /** 認可済みアクセストークン（`ok` が `true` のとき） */
   token?: string;
+  /** 認可したユーザー情報（`ok` が `true` のとき） */
   user?: MisskeyUser;
 }
 
-/** API 呼び出し全般の失敗 */
+/**
+ * Misskey API 呼び出し全般の失敗を表す基底エラー。
+ *
+ * @remarks
+ * HTTP ステータスとレスポンスボディを保持する。特定のステータスに対応する
+ * サブクラスとして {@link NoSuchUserError} / {@link TokenInvalidError} /
+ * {@link RateLimitError} がある。
+ *
+ * @since 0.1.0
+ */
 export class MisskeyApiError extends Error {
+  /**
+   * @param message - エラーメッセージ
+   * @param status - HTTP ステータスコード
+   * @param body - レスポンスボディ（パースできた場合）
+   */
   constructor(
     message: string,
+    /** HTTP ステータスコード */
     readonly status: number,
+    /** レスポンスボディ（パースできた場合） */
     readonly body?: unknown,
   ) {
     super(message);
@@ -47,25 +106,54 @@ export class MisskeyApiError extends Error {
   }
 }
 
-/** users/show で対象が存在しない or 凍結（404 NO_SUCH_USER） */
+/**
+ * `users/show` で対象が存在しない、または凍結されている場合のエラー（404 NO_SUCH_USER）。
+ *
+ * @see {@link MisskeyApiError}
+ * @since 0.1.0
+ */
 export class NoSuchUserError extends MisskeyApiError {
+  /**
+   * @param body - レスポンスボディ（パースできた場合）
+   */
   constructor(body?: unknown) {
     super("NO_SUCH_USER", 404, body);
     this.name = "NoSuchUserError";
   }
 }
 
-/** トークンが無効・失効・アカウント削除（401 AUTHENTICATION_FAILED） */
+/**
+ * トークンが無効・失効、またはアカウント削除済みの場合のエラー（401 AUTHENTICATION_FAILED）。
+ *
+ * @see {@link MisskeyApiError}
+ * @since 0.1.0
+ */
 export class TokenInvalidError extends MisskeyApiError {
+  /**
+   * @param body - レスポンスボディ（パースできた場合）
+   */
   constructor(body?: unknown) {
     super("AUTHENTICATION_FAILED", 401, body);
     this.name = "TokenInvalidError";
   }
 }
 
-/** レート制限（429）。retryAfterSec 秒後に再試行 */
+/**
+ * レート制限に達した場合のエラー（429 RATE_LIMIT_EXCEEDED）。
+ *
+ * @remarks
+ * `retryAfterSec` 秒後に再試行する。
+ *
+ * @see {@link MisskeyApiError}
+ * @since 0.1.0
+ */
 export class RateLimitError extends MisskeyApiError {
+  /**
+   * @param retryAfterSec - 再試行までの待機秒数（`Retry-After` ヘッダ未指定時は `null`）
+   * @param body - レスポンスボディ（パースできた場合）
+   */
   constructor(
+    /** 再試行までの待機秒数（`Retry-After` ヘッダ未指定時は `null`） */
     readonly retryAfterSec: number | null,
     body?: unknown,
   ) {
@@ -74,21 +162,62 @@ export class RateLimitError extends MisskeyApiError {
   }
 }
 
+/**
+ * {@link MisskeyClient.buildMiauthUrl} に渡す MiAuth 認可 URL の生成オプション。
+ *
+ * @since 0.1.0
+ */
 export interface BuildMiauthUrlOptions {
+  /** MiAuth 画面に表示されるアプリ名 */
   appName: string;
+  /** 認可完了後のコールバック URL */
   callback: string;
+  /** 要求するパーミッション（既定: `read:account`） */
   permission?: string;
+  /** アプリのアイコン URL（任意） */
   iconUrl?: string;
 }
 
+/**
+ * いかすきー(Misskey) API クライアント。
+ *
+ * @remarks
+ * 調査で確定した現行仕様に基づく:
+ * - MiAuth: `/miauth/{uuid}?name&callback&permission=read:account` → `/api/miauth/{uuid}/check`
+ * - 存在確認: `POST /api/users/show`（userId）。404 NO_SUCH_USER = 消滅 or 凍結
+ * - トークン失効検知: `POST /api/i`（Bearer）。401 AUTHENTICATION_FAILED
+ * - 公開ロール: `users/show` の `roles[]` / 一覧は `POST /api/roles/list`（read:account）
+ *
+ * @since 0.1.0
+ */
 export class MisskeyClient {
+  /**
+   * @param host - 対象 Misskey インスタンスのホスト名（例: `ikaskey.bktsk.com`）
+   */
   constructor(private readonly host: string) {}
 
   private get base(): string {
     return `https://${this.host}`;
   }
 
-  /** MiAuth 認可URL（このURLにユーザーを誘導する） */
+  /**
+   * MiAuth の認可 URL を生成する（このURLにユーザーを誘導する）。
+   *
+   * @param session - MiAuth セッション UUID（{@link newMiauthSession} 等で採番）
+   * @param opts - 認可 URL の生成オプション
+   * @returns 生成された MiAuth 認可 URL
+   *
+   * @example
+   * ```ts
+   * const client = new MisskeyClient("ikaskey.bktsk.com");
+   * const url = client.buildMiauthUrl(session, {
+   *   appName: "いかすきー会員認証",
+   *   callback: "https://example.com/callback",
+   * });
+   * ```
+   *
+   * @since 0.1.0
+   */
   buildMiauthUrl(session: string, opts: BuildMiauthUrlOptions): string {
     const url = new URL(`${this.base}/miauth/${session}`);
     url.searchParams.set("name", opts.appName);
@@ -98,7 +227,18 @@ export class MisskeyClient {
     return url.toString();
   }
 
-  /** トークン確定。ok=false は未認可/無効セッション */
+  /**
+   * MiAuth セッションを検証してトークンを確定する。
+   *
+   * @remarks
+   * 戻り値の `ok` が `false` の場合は未認可または無効なセッション。
+   *
+   * @param session - MiAuth セッション UUID
+   * @returns {@link MiauthCheckResult}
+   * @throws {@link MisskeyApiError} HTTP レスポンスが成功でない場合
+   *
+   * @since 0.1.0
+   */
   async miauthCheck(session: string): Promise<MiauthCheckResult> {
     const res = await fetch(`${this.base}/api/miauth/${session}/check`, {
       method: "POST",
@@ -136,12 +276,35 @@ export class MisskeyClient {
     throw new MisskeyApiError(`${endpoint} failed`, res.status, body);
   }
 
-  /** ユーザー詳細（userId 指定）。非存在/凍結は NoSuchUserError */
+  /**
+   * ユーザー詳細を取得する（userId 指定）。
+   *
+   * @param userId - 取得対象の Misskey ユーザー ID
+   * @returns 取得した {@link MisskeyUser}
+   * @throws {@link NoSuchUserError} 対象が存在しない、または凍結されている場合
+   * @throws {@link RateLimitError} レート制限に達した場合
+   * @throws {@link MisskeyApiError} その他の API エラー
+   *
+   * @since 0.1.0
+   */
   usersShow(userId: string): Promise<MisskeyUser> {
     return this.call<MisskeyUser>("users/show", { userId });
   }
 
-  /** 存在確認。404 を boolean に変換（凍結も exists:false 扱い） */
+  /**
+   * ユーザーの存在確認を行う。
+   *
+   * @remarks
+   * 404（{@link NoSuchUserError}）を `exists:false` に変換する（凍結も `false` 扱い）。
+   * 429・5xx 等はそのまま再スローし、誤キックを防止する。
+   *
+   * @param userId - 確認対象の Misskey ユーザー ID
+   * @returns 存在有無と、存在する場合は {@link MisskeyUser}
+   * @throws {@link RateLimitError} レート制限に達した場合
+   * @throws {@link MisskeyApiError} 404 以外の API エラー
+   *
+   * @since 0.1.0
+   */
   async checkUserExists(userId: string): Promise<{ exists: boolean; user?: MisskeyUser }> {
     try {
       const user = await this.usersShow(userId);
@@ -152,12 +315,38 @@ export class MisskeyClient {
     }
   }
 
-  /** トークンで本人取得。失効時は TokenInvalidError */
+  /**
+   * アクセストークンで本人情報を取得する（`POST /api/i`）。
+   *
+   * @remarks
+   * トークンの失効検知に用いる。
+   *
+   * @param token - 検証対象のアクセストークン
+   * @returns 本人の {@link MisskeyUser}
+   * @throws {@link TokenInvalidError} トークンが無効・失効、またはアカウント削除済みの場合
+   * @throws {@link RateLimitError} レート制限に達した場合
+   * @throws {@link MisskeyApiError} その他の API エラー
+   *
+   * @since 0.1.0
+   */
   getMe(token: string): Promise<MisskeyUser> {
     return this.call<MisskeyUser>("i", {}, token);
   }
 
-  /** インスタンスの公開ロール一覧（isPublic && isExplorable のみ返る） */
+  /**
+   * インスタンスの公開ロール一覧を取得する（`POST /api/roles/list`）。
+   *
+   * @remarks
+   * `isPublic && isExplorable` のロールのみが返る。
+   *
+   * @param token - `read:account` 権限を持つアクセストークン
+   * @returns 公開ロールの配列
+   * @throws {@link TokenInvalidError} トークンが無効・失効した場合
+   * @throws {@link RateLimitError} レート制限に達した場合
+   * @throws {@link MisskeyApiError} その他の API エラー
+   *
+   * @since 0.1.0
+   */
   rolesList(token: string): Promise<MisskeyRole[]> {
     return this.call<MisskeyRole[]>("roles/list", {}, token);
   }

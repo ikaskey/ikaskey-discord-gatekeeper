@@ -38,25 +38,63 @@ function optionalEnv(name: string, fallback: string): string {
   return v === undefined || v === "" ? fallback : v;
 }
 
+/**
+ * アプリケーション全体の設定。
+ *
+ * @remarks
+ * 環境変数から構築される。`discord` / `web.publicBaseUrl` は必須、
+ * `misskey` と `web.port` は既定値を持つ。{@link loadConfig} を介して取得する。
+ *
+ * @since 0.1.0
+ */
 export interface AppConfig {
+  /** Discord 連携に関する設定 */
   discord: {
+    /** Bot トークン（環境変数 `DISCORD_TOKEN`） */
     token: string;
+    /** Discord アプリケーションの Client ID（環境変数 `DISCORD_CLIENT_ID`） */
     clientId: string;
+    /** 対象の Guild（サーバー）ID（環境変数 `DISCORD_GUILD_ID`） */
     guildId: string;
+    /** 認証完了時に付与するロールの ID（環境変数 `VERIFIED_ROLE_ID`） */
     verifiedRoleId: string;
   };
+  /** Misskey(いかすきー) 連携に関する設定 */
   misskey: {
+    /** Misskey インスタンスのホスト名（環境変数 `MISSKEY_HOST`、既定: `ikaskey.bktsk.com`） */
     host: string;
+    /** MiAuth に表示されるアプリ名（環境変数 `MISSKEY_APP_NAME`、既定: `いかすきー会員認証`） */
     appName: string;
   };
+  /** Web サーバーに関する設定 */
   web: {
+    /** 外部公開時のベース URL（環境変数 `PUBLIC_BASE_URL`、末尾スラッシュは除去される） */
     publicBaseUrl: string;
+    /** Web サーバーの待ち受けポート（環境変数 `WEB_PORT`、既定: `3001`） */
     port: number;
   };
 }
 
 let cached: AppConfig | undefined;
 
+/**
+ * 環境変数から {@link AppConfig} を構築して返す。
+ *
+ * @remarks
+ * 結果はプロセス内でキャッシュされ、2 回目以降は同一インスタンスを返す。
+ * dev 環境では cwd から上方向に `.env` を探索して読み込む（best-effort）。
+ *
+ * @returns 構築済みの {@link AppConfig}
+ * @throws {@link Error} 必須の環境変数（`DISCORD_TOKEN` 等）が未設定の場合
+ *
+ * @example
+ * ```ts
+ * const config = loadConfig();
+ * console.log(config.web.port);
+ * ```
+ *
+ * @since 0.1.0
+ */
 export function loadConfig(): AppConfig {
   if (cached) return cached;
   cached = {

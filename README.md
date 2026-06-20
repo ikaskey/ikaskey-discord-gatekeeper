@@ -6,6 +6,15 @@
 - 🔜 いかすきーアカウントが消滅/凍結したら自動でキック（退会連動・M3）
 - 🔜 Misskeyのロールに応じてDiscordロールを自動連動（管理画面で連動先を選択・M4/M5）
 
+## ドキュメント
+
+API ドキュメント（TSDoc から TypeDoc で生成）は GitHub Pages で公開:
+**https://ikaskey.github.io/ikaskey-discord-gatekeeper/**
+
+`main` への push で `.github/workflows/docs.yml` が自動デプロイします（要: リポジトリ Settings →
+Pages → Source = "GitHub Actions"）。ローカル生成は `pnpm docs`（`docs-site/` に出力）。
+各 API がどのバージョンで追加・変更されたかは TSDoc の `@since` と [CHANGELOG.md](./CHANGELOG.md) を参照。
+
 ## アーキテクチャ
 
 ```

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPointStrategy": "packages",
+  "entryPoints": ["../core", "../bot", "../web"],
+  "out": "../../docs-site",
+  "name": "ikaskey-discord-gatekeeper",
+  "readme": "../../README.md",
+  "includeVersion": false,
+  "skipErrorChecking": true,
+  "excludeExternals": true
+}

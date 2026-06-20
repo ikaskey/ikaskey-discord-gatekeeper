@@ -19,3 +19,4 @@ packages/core/src/generated/
 
 # ローカルのbuildx不全回避用に生成する検証用Dockerfile（リポジトリには含めない）
 Dockerfile.legacy
+docs-site/

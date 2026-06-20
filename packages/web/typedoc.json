@@ -1,0 +1,5 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/app.ts", "src/discord.ts", "src/views.ts", "src/server.ts"],
+  "tsconfig": "tsconfig.json"
+}

@@ -1,3 +1,17 @@
+/**
+ * 認証結果ページの HTML 描画モジュール。
+ *
+ * @remarks
+ * 外部テンプレートエンジンを使わず、テンプレートリテラルで自己完結した HTML を返す。
+ * ユーザー入力(ユーザー名など)は必ず {@link escapeHtml} を通して埋め込む。
+ */
+
+/**
+ * HTML 特殊文字をエスケープし、XSS を防ぐための内部ヘルパー。
+ *
+ * @param s - エスケープ対象の文字列
+ * @returns `&`, `<`, `>`, `"`, `'` を実体参照に変換した文字列
+ */
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (ch) => {
     switch (ch) {
@@ -15,6 +29,13 @@ function escapeHtml(s: string): string {
   });
 }
 
+/**
+ * 共通レイアウト(doctype・head・スタイル)で本文 HTML を包む内部ヘルパー。
+ *
+ * @param title - `<title>` に設定するページタイトル(エスケープ済みで埋め込む)
+ * @param bodyHtml - `.card` 内に挿入する本文 HTML(呼び出し側でエスケープ責任を負う)
+ * @returns 完全な HTML ドキュメント文字列
+ */
 function page(title: string, bodyHtml: string): string {
   return `<!doctype html>
 <html lang="ja">
@@ -38,6 +59,20 @@ function page(title: string, bodyHtml: string): string {
 </html>`;
 }
 
+/**
+ * 認証成功ページの HTML を生成する。
+ *
+ * @param username - 認証された いかすきー ユーザー名(`@` なし。内部でエスケープされる)
+ * @returns 認証完了メッセージを含む完全な HTML ドキュメント
+ * @remarks
+ * MiAuth コールバック成功時(token 確定 → Link 保存 → ロール付与の完了後)に返す。
+ * @example
+ * ```ts
+ * return c.html(successPage(user.username));
+ * ```
+ * @see {@link errorPage}
+ * @since 0.1.0
+ */
 export function successPage(username: string): string {
   return page(
     "認証完了",
@@ -48,6 +83,22 @@ export function successPage(username: string): string {
   );
 }
 
+/**
+ * 認証エラーページの HTML を生成する。
+ *
+ * @param message - 利用者向けの主たるエラーメッセージ(内部でエスケープされる)
+ * @param detail - 補足説明(任意)。指定時は小さめのテキストで併記される
+ * @returns エラーメッセージを含む完全な HTML ドキュメント
+ * @remarks
+ * state 不正・セッション不一致・MiAuth 未完了・連携済み・ロール付与失敗など、
+ * 各ルートで発生しうる失敗時に適切な HTTP ステータスとともに返す。
+ * @example
+ * ```ts
+ * return c.html(errorPage("リンクが不正です。"), 400);
+ * ```
+ * @see {@link successPage}
+ * @since 0.1.0
+ */
 export function errorPage(message: string, detail?: string): string {
   return page(
     "認証エラー",

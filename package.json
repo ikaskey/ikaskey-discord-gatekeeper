@@ -14,7 +14,7 @@
     "fmt:check": "vp fmt --check",
     "check": "vp check",
     "typecheck": "pnpm -r typecheck",
-    "docs": "pnpm --filter @gatekeeper/docs build",
+    "docs": "pnpm --filter @gatekeeper/docs generate",
     "prisma:generate": "pnpm --filter @gatekeeper/core prisma:generate",
     "prisma:migrate": "pnpm --filter @gatekeeper/core prisma:migrate",
     "prisma:deploy": "pnpm --filter @gatekeeper/core prisma:deploy"

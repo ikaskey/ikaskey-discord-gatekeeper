@@ -1,3 +1,21 @@
+/**
+ * MiAuth 認証フローの中核となる Hono アプリケーション。
+ *
+ * @remarks
+ * web プロセスは Discord のゲートウェイ接続を持たず、REST のみで動作する。
+ * 認証は次の 2 ステップで進む:
+ * 1. `/auth/misskey/start` — bot が発行した state(nonce) を検証し、
+ *    MiAuth セッションを採番して いかすきー の認可画面へ 302 リダイレクト。
+ * 2. `/auth/misskey/callback` — token を確定し、Link を保存(1:1 制約)した上で
+ *    会員ロールを REST で付与する。
+ *
+ * ロール付与には Bot の **Manage Roles** 権限と、Bot ロールを会員ロールより
+ * 上位に置くロール階層が必要。
+ *
+ * @see {@link addGuildMemberRole}
+ * @see {@link successPage}
+ * @see {@link errorPage}
+ */
 import { Hono } from "hono";
 import {
   MisskeyAlreadyLinkedError,
@@ -15,13 +33,32 @@ import { errorPage, successPage } from "./views.js";
 const config = loadConfig();
 const misskey = new MisskeyClient(config.misskey.host);
 
+/**
+ * MiAuth フローと死活監視を提供する Hono アプリケーション。
+ *
+ * @remarks
+ * `server.ts` から `app.fetch` として `@hono/node-server` に渡され listen される。
+ * 公開ルートは `/healthz`・`/auth/misskey/start`・`/auth/misskey/callback` の 3 つ。
+ * @see {@link ./server.ts}
+ * @since 0.1.0
+ */
 const app = new Hono();
 
+/**
+ * ヘルスチェック用エンドポイント。
+ *
+ * @remarks
+ * 常に `{ ok: true }` を JSON で返す。死活監視・ロードバランサのプローブ用。
+ */
 app.get("/healthz", (c) => c.json({ ok: true }));
 
 /**
- * 認証開始: bot が発行した state(nonce) を受け取り、
- * MiAuth セッションを採番して いかすきー の認可画面へリダイレクト。
+ * GET `/auth/misskey/start` — 認証開始。
+ *
+ * @remarks
+ * クエリ `state`(bot が発行した nonce)を受け取り、有効な state を確認する。
+ * 新しい MiAuth セッションを採番して state に紐付け、いかすきー の認可画面へ 302 リダイレクトする。
+ * state が欠落・無効・期限切れの場合は {@link errorPage} を 400 で返す。
  */
 app.get("/auth/misskey/start", async (c) => {
   const nonce = c.req.query("state");
@@ -51,7 +88,16 @@ app.get("/auth/misskey/start", async (c) => {
 });
 
 /**
- * MiAuth コールバック: トークンを確定し、Link を保存して会員ロールを付与。
+ * GET `/auth/misskey/callback` — MiAuth コールバック。
+ *
+ * @remarks
+ * クエリ `state`(nonce)と `session` を検証し、次の順で処理する:
+ * 1. `miauthCheck` で token とユーザー情報を確定。未完了・通信失敗なら 400/502。
+ * 2. {@link upsertLink} で Link を保存(1:1 制約)。既に別 Discord に連携済みなら 409。
+ * 3. {@link addGuildMemberRole} で会員ロールを REST 付与。失敗時は権限/ロール階層案内を 500 で返す。
+ *
+ * すべて成功すると state を消費し {@link successPage} を返す。
+ * @throws {@link upsertLink} が `MisskeyAlreadyLinkedError` 以外のエラーを投げた場合は再 throw する。
  */
 app.get("/auth/misskey/callback", async (c) => {
   const nonce = c.req.query("state");
@@ -138,4 +184,16 @@ app.get("/auth/misskey/callback", async (c) => {
   return c.html(successPage(user.username));
 });
 
+/**
+ * MiAuth フローを提供する Hono アプリのデフォルトエクスポート。
+ *
+ * @remarks
+ * `server.ts` で `app.fetch` として `@hono/node-server` の `serve` に渡される。
+ * @example
+ * ```ts
+ * import app from "./app.js";
+ * serve({ fetch: app.fetch, port });
+ * ```
+ * @since 0.1.0
+ */
 export default app;

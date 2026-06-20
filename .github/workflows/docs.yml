@@ -1,0 +1,57 @@
+name: Docs
+
+# TypeDoc で生成した API ドキュメントを GitHub Pages へ公開する。
+# 事前に GitHub リポジトリの Settings → Pages → Source を "GitHub Actions" にしておくこと。
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時実行は1つに絞り、進行中のものはキャンセル
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # prisma generate のための仮の値（DB接続はしない）
+      DATABASE_URL: "file:./dev.db"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4 # package.json の packageManager を尊重
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # db.ts が参照する生成 Prisma クライアントを用意（型解決のため）
+      - run: pnpm --filter @gatekeeper/core prisma:generate
+
+      # TypeDoc で docs-site/ を生成
+      - run: pnpm docs
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs-site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

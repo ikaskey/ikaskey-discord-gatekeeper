@@ -1,3 +1,15 @@
+/**
+ * ギルドコマンド登録スクリプト。
+ *
+ * @remarks
+ * {@link allCommands} を JSON 化し、`applicationGuildCommands` エンドポイントへ
+ * `PUT` して指定ギルドにスラッシュコマンドを一括登録する単発スクリプト。
+ * ギルドコマンドは即時反映されるため、常駐ボットの起動時ではなく
+ * デプロイ時にこのスクリプトを 1 回だけ実行する運用とする。
+ *
+ * @see {@link allCommands} - 登録対象コマンドの一覧
+ * @since 0.1.0
+ */
 import { REST, Routes } from "discord.js";
 import { loadConfig } from "@gatekeeper/core";
 import { allCommands } from "./commands.js";
