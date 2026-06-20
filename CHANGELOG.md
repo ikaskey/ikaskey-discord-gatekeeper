@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+## [0.8.10] - 2026-06-21
+
+### Changed
+
+- README の古いロードマップ（M1〜M5・M2「未着手」・状態「ローカル検証済」）を、現状を反映した
+  **機能一覧（すべて実装・本番稼働中）** に置換。未認証のチャンネル隔離は Discord 標準のロール権限で
+  実現する旨を明記（コード機能ではなく運用手順・MIGRATION.md 参照）。
+
 ## [0.8.9] - 2026-06-21
 
 ### Fixed
@@ -216,7 +224,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.9...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.10...HEAD
+[0.8.10]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.9...v0.8.10
 [0.8.9]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.8...v0.8.9
 [0.8.8]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.7...v0.8.8
 [0.8.7]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.6...v0.8.7
