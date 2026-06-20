@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import type { Client } from "discord.js";
 import {
+  computeModAdminRoleSync,
   computeRoleSync,
   listActiveRoleMappings,
   loadConfig,
@@ -95,11 +96,20 @@ export async function performSweep(client: Client): Promise<void> {
  */
 async function syncRolesForMembers(
   client: Client,
-  targets: { discordId: string; guildId: string; misskeyRoleIds: string[] }[],
+  targets: {
+    discordId: string;
+    guildId: string;
+    misskeyRoleIds: string[];
+    authLevelKnown: boolean;
+    isModerator: boolean;
+    isAdministrator: boolean;
+  }[],
 ): Promise<void> {
   if (targets.length === 0) return;
   const mappings = await listActiveRoleMappings();
-  if (mappings.length === 0) return;
+  const { moderatorRoleId, adminRoleId } = config.misskey;
+  const doModAdmin = Boolean(moderatorRoleId || adminRoleId);
+  if (mappings.length === 0 && !doModAdmin) return;
 
   for (const target of targets) {
     try {
@@ -108,21 +118,43 @@ async function syncRolesForMembers(
       if (!member) continue;
 
       const current = new Set(member.roles.cache.map((r) => r.id));
-      const plan = computeRoleSync(new Set(target.misskeyRoleIds), mappings, current);
+      const toAdd = new Set<string>();
+      const toRemove = new Set<string>();
 
-      if (plan.toAdd.length > 0) {
-        await member.roles.add(plan.toAdd, "Misskeyロール連動").catch((e: unknown) => {
+      // M4: Misskey ロール連動
+      if (mappings.length > 0) {
+        const plan = computeRoleSync(new Set(target.misskeyRoleIds), mappings, current);
+        for (const r of plan.toAdd) toAdd.add(r);
+        for (const r of plan.toRemove) toRemove.add(r);
+      }
+      // M7: Misskey モデレーター/管理者連動（権限が判明している場合のみ）
+      if (doModAdmin && target.authLevelKnown) {
+        const plan = computeModAdminRoleSync({
+          isModerator: target.isModerator,
+          isAdministrator: target.isAdministrator,
+          moderatorRoleId,
+          adminRoleId,
+          currentRoleIds: current,
+        });
+        for (const r of plan.toAdd) toAdd.add(r);
+        for (const r of plan.toRemove) toRemove.add(r);
+      }
+
+      const addArr = [...toAdd].filter((r) => !toRemove.has(r));
+      const removeArr = [...toRemove];
+      if (addArr.length > 0) {
+        await member.roles.add(addArr, "Misskey連動").catch((e: unknown) => {
           console.error(`[sweep] role add failed for ${target.discordId}`, e);
         });
       }
-      if (plan.toRemove.length > 0) {
-        await member.roles.remove(plan.toRemove, "Misskeyロール連動").catch((e: unknown) => {
+      if (removeArr.length > 0) {
+        await member.roles.remove(removeArr, "Misskey連動").catch((e: unknown) => {
           console.error(`[sweep] role remove failed for ${target.discordId}`, e);
         });
       }
-      if (plan.toAdd.length > 0 || plan.toRemove.length > 0) {
+      if (addArr.length > 0 || removeArr.length > 0) {
         console.log(
-          `[sweep] roles synced for ${target.discordId}: +${plan.toAdd.length} -${plan.toRemove.length}`,
+          `[sweep] roles synced for ${target.discordId}: +${addArr.length} -${removeArr.length}`,
         );
       }
     } catch (err) {

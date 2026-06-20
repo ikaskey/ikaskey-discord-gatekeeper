@@ -65,7 +65,13 @@ export interface MisskeyUser {
    */
   isModerator?: boolean;
   /**
-   * 管理者権限を持つか（`/api/i` で本人取得時のみ返る）。
+   * 管理者権限を持つか（`/api/i` で本人取得時に返る Misskey の `isAdmin` フィールド）。
+   * @since 0.8.1
+   */
+  isAdmin?: boolean;
+  /**
+   * 管理者権限を持つか（後方互換のための別名。Misskey の現行 `/api/i` は {@link MisskeyUser.isAdmin} を返す）。
+   * @deprecated Misskey は `isAdmin` を返すため、判定には {@link MisskeyUser.isAdmin} を使う。
    * @since 0.4.0
    */
   isAdministrator?: boolean;
@@ -398,19 +404,24 @@ export class MisskeyClient {
    * @throws 429・5xx・ネットワーク等は呼び出し側で扱う
    * @since 0.8.0
    */
-  async checkAuthLevel(
-    token: string,
-  ): Promise<{ exists: boolean; isModerator: boolean; isAdministrator: boolean }> {
+  async checkAuthLevel(token: string): Promise<{
+    exists: boolean;
+    isModerator: boolean;
+    isAdministrator: boolean;
+    roleIds: string[];
+  }> {
     try {
       const me = await this.getMe(token);
       return {
         exists: true,
         isModerator: Boolean(me.isModerator),
-        isAdministrator: Boolean(me.isAdministrator),
+        // Misskey の /api/i は `isAdmin` を返す（`isAdministrator` は後方互換のフォールバック）
+        isAdministrator: Boolean(me.isAdmin ?? me.isAdministrator),
+        roleIds: (me.roles ?? []).map((r) => r.id),
       };
     } catch (err) {
       if (err instanceof TokenInvalidError) {
-        return { exists: false, isModerator: false, isAdministrator: false };
+        return { exists: false, isModerator: false, isAdministrator: false, roleIds: [] };
       }
       throw err;
     }
