@@ -43,6 +43,16 @@ export interface ToSyncRoles {
   guildId: string;
   /** その時点で保有する Misskey 公開ロールの ID */
   misskeyRoleIds: string[];
+  /**
+   * Misskey のモデレーター/管理者状態が判明しているか（トークンで `/api/i` を引けた場合 `true`）。
+   * `false` の場合 mod/admin 連動はスキップする（古い判定で剥奪しないため）。
+   * @since 0.8.1
+   */
+  authLevelKnown: boolean;
+  /** Misskey モデレーターか（`authLevelKnown` が `true` のときのみ有効）@since 0.8.1 */
+  isModerator: boolean;
+  /** Misskey 管理者か（`authLevelKnown` が `true` のときのみ有効）@since 0.8.1 */
+  isAdministrator: boolean;
 }
 
 /**
@@ -188,17 +198,13 @@ export async function runSweep(client: MisskeyClient, opts: SweepOptions): Promi
     if (await isAllowlisted(link.discordId)) continue;
     result.checked++;
     try {
-      const firstCheck = await client.checkUserExists(link.misskeyId);
-      let exists = firstCheck.exists;
-      let user = firstCheck.user;
-      if (!exists) {
+      let p = await probeMember(client, link);
+      if (!p.exists) {
         await sleep(opts.recheckDelayMs);
-        const second = await client.checkUserExists(link.misskeyId);
-        exists = second.exists;
-        user = second.user;
+        p = await probeMember(client, link);
       }
       const { kick, newFailureCount } = decideAction(
-        !exists,
+        !p.exists,
         link.failureCount,
         opts.failureThreshold,
       );
@@ -215,11 +221,14 @@ export async function runSweep(client: MisskeyClient, opts: SweepOptions): Promi
         });
       } else {
         result.kept++;
-        // M4: 存在を確認したメンバーはロール同期対象に積む
+        // M4/M7: 存在を確認したメンバーはロール同期対象に積む
         result.toSyncRoles.push({
           discordId: link.discordId,
           guildId: link.guildId,
-          misskeyRoleIds: (user?.roles ?? []).map((r) => r.id),
+          misskeyRoleIds: p.roleIds,
+          authLevelKnown: p.authLevelKnown,
+          isModerator: p.isModerator,
+          isAdministrator: p.isAdministrator,
         });
       }
     } catch {
@@ -229,4 +238,38 @@ export async function runSweep(client: MisskeyClient, opts: SweepOptions): Promi
   }
 
   return result;
+}
+
+/**
+ * 1 メンバーの存在確認とロール/権限の取得。トークンがあれば `/api/i` で存在＋ロール＋
+ * モデレーター/管理者を一度に取得し、無ければ `users/show` で存在＋公開ロールのみ取得する。
+ */
+async function probeMember(
+  client: MisskeyClient,
+  link: Link,
+): Promise<{
+  exists: boolean;
+  roleIds: string[];
+  authLevelKnown: boolean;
+  isModerator: boolean;
+  isAdministrator: boolean;
+}> {
+  if (link.token) {
+    const lvl = await client.checkAuthLevel(link.token);
+    return {
+      exists: lvl.exists,
+      roleIds: lvl.roleIds,
+      authLevelKnown: true,
+      isModerator: lvl.isModerator,
+      isAdministrator: lvl.isAdministrator,
+    };
+  }
+  const r = await client.checkUserExists(link.misskeyId);
+  return {
+    exists: r.exists,
+    roleIds: (r.user?.roles ?? []).map((x) => x.id),
+    authLevelKnown: false,
+    isModerator: false,
+    isAdministrator: false,
+  };
 }

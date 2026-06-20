@@ -7,6 +7,18 @@
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-06-20
+
+### Fixed
+
+- 管理者ロールが連動されない不具合を修正。Misskey の `/api/i` は管理者フラグを **`isAdmin`** で返すため、
+  `isAdministrator` を見ていた判定を `isAdmin` 優先に修正（モデレーター判定 `isModerator` は元から正常）。
+
+### Added
+
+- 定期検証スイープでも **Misskey モデレーター/管理者 → Discord ロール**を同期。トークンがあれば
+  `/api/i` で存在確認・ロール・モデレーター/管理者を一度に取得（`probeMember`）。
+
 ## [0.8.0] - 2026-06-20
 
 ### Added
@@ -135,7 +147,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.0...v0.7.1
