@@ -1,0 +1,70 @@
+name: Release
+
+# main への push 時、packages/core の version に対応する v<version> タグが未作成なら、
+# CHANGELOG.md の該当セクションを本文にして GitHub Release を自動生成する。
+# 手動実行（workflow_dispatch）でも同様に動く（タグ未作成の最新バージョンを対象）。
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: バージョン取得
+        id: ver
+        run: |
+          v=$(jq -r .version packages/core/package.json)
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "tag=v$v" >> "$GITHUB_OUTPUT"
+
+      - name: 既存タグ確認
+        id: check
+        run: |
+          if git rev-parse "refs/tags/${{ steps.ver.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "v${{ steps.ver.outputs.version }} は既にタグ済み。スキップします。"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: リリースノート生成（CHANGELOG 抽出）
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          awk -v ver="${{ steps.ver.outputs.version }}" '
+            $0 ~ "^## \\[" ver "\\]" {f=1; next}
+            f && /^## \[/ {exit}
+            f {print}
+          ' CHANGELOG.md | sed '/./,$!d' > RELEASE_NOTES.md
+          if [ ! -s RELEASE_NOTES.md ]; then
+            echo "（このバージョンの CHANGELOG セクションが見つかりませんでした）" > RELEASE_NOTES.md
+          fi
+          {
+            echo ""
+            echo "---"
+            echo "**Full changelog**: https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md"
+          } >> RELEASE_NOTES.md
+
+      - name: タグ作成 & リリース公開
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git tag "${{ steps.ver.outputs.tag }}"
+          git push origin "${{ steps.ver.outputs.tag }}"
+          gh release create "${{ steps.ver.outputs.tag }}" \
+            --title "${{ steps.ver.outputs.tag }}" \
+            --notes-file RELEASE_NOTES.md

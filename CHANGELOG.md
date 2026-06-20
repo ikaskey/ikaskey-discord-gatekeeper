@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-06-21
+
+### Added
+
+- **Release Note の自動生成**（`.github/workflows/release.yml`）。`main` への push 時、`packages/core`
+  の version に対応する `v<version>` タグが未作成なら、CHANGELOG.md の該当セクションを本文にして
+  タグ＋GitHub Release を自動作成する（`workflow_dispatch` でも実行可）。
+
 ## [0.9.0] - 2026-06-21
 
 ### Changed
@@ -235,7 +243,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.10...v0.9.0
 [0.8.10]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.9...v0.8.10
 [0.8.9]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.8...v0.8.9
