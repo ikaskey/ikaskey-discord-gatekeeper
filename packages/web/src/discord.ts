@@ -84,3 +84,21 @@ export function removeGuildMemberRole(
 export function kickGuildMember(guildId: string, userId: string, reason: string): Promise<unknown> {
   return rest.delete(Routes.guildMember(guildId, userId), { reason });
 }
+
+/**
+ * 指定ギルドのメンバーが現在保有する Discord ロール ID を取得する。
+ *
+ * @remarks
+ * ロール差分同期（M4）で現在のロール集合を得るために使う。REST `GET guildMember` の
+ * `roles` フィールドを返す。
+ *
+ * @param guildId - 対象ギルド(サーバー)の ID
+ * @param userId - 対象 Discord ユーザーの ID
+ * @returns メンバーが保有するロール ID の配列
+ * @throws Discord REST API が失敗した場合（対象不在など）に reject する。
+ * @since 0.3.0
+ */
+export async function getGuildMemberRoleIds(guildId: string, userId: string): Promise<string[]> {
+  const member = (await rest.get(Routes.guildMember(guildId, userId))) as { roles: string[] };
+  return member.roles;
+}

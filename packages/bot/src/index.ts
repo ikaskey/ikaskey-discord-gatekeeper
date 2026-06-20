@@ -20,6 +20,7 @@ import { Client, Events, GatewayIntentBits, MessageFlags } from "discord.js";
 import type { Interaction } from "discord.js";
 import { createVerificationState, loadConfig } from "@gatekeeper/core";
 import { sendVerifyPanel, VERIFY_BUTTON_ID } from "./panel.js";
+import { handleRoleMap } from "./rolemap.js";
 import { startSweepSchedule } from "./sweep.js";
 
 const config = loadConfig();
@@ -69,6 +70,12 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         content: "認証パネルを設置しました。",
         flags: MessageFlags.Ephemeral,
       });
+      return;
+    }
+
+    // /rolemap: Misskeyロール↔Discordロール連動の管理
+    if (interaction.isChatInputCommand() && interaction.commandName === "rolemap") {
+      await handleRoleMap(interaction);
       return;
     }
 

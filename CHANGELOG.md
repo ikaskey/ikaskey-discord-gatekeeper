@@ -7,6 +7,19 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-20
+
+### Added
+
+- **M4: ロール自動連動** — Misskey の公開ロールに応じて Discord ロールを差分同期。
+  - `@gatekeeper/core`: `computeRoleSync`（純関数・テスト付き）、`listActiveRoleMappings` /
+    `listRoleMappings` / `upsertRoleMapping` / `deleteRoleMapping`（`@since 0.3.0`）。
+    管理対象（マッピングに含まれる Discord ロール）のみを操作し、会員ロール・手動ロールは触らない。
+  - `@gatekeeper/bot`: 定期スイープ時に存在を確認したメンバーのロールを差分同期。
+    `/rolemap`（list/set/remove）コマンドで連動設定を管理（M5 の管理 UI までの暫定手段）。
+  - `@gatekeeper/web`: MiAuth 認証完了時に即時でロール連動。
+- `SweepResult.toSyncRoles`（スイープが返すロール同期対象）。
+
 ## [0.2.0] - 2026-06-20
 
 ### Added
@@ -40,6 +53,7 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/releases/tag/v0.1.0

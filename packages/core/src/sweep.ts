@@ -29,6 +29,23 @@ export interface ToKick {
 }
 
 /**
+ * ロール同期対象の 1 件（存在を確認したメンバー）。
+ *
+ * @remarks
+ * `misskeyRoleIds` はその時点の Misskey 公開ロール ID。呼び出し側（bot）が連動設定と
+ * 突き合わせて Discord ロールを差分同期する。
+ *
+ * @see {@link @gatekeeper/core#computeRoleSync}
+ * @since 0.3.0
+ */
+export interface ToSyncRoles {
+  discordId: string;
+  guildId: string;
+  /** その時点で保有する Misskey 公開ロールの ID */
+  misskeyRoleIds: string[];
+}
+
+/**
  * スイープの集計結果。
  *
  * @since 0.2.0
@@ -44,6 +61,8 @@ export interface SweepResult {
   kept: number;
   /** キック対象のリスト（Discord 操作は呼び出し側が実施） */
   toKick: ToKick[];
+  /** 存在を確認したメンバーのロール同期対象（M4: ロール自動連動） */
+  toSyncRoles: ToSyncRoles[];
   /** API/ネットワークエラーで判定を保留した数 */
   errored: number;
 }
@@ -150,6 +169,7 @@ export async function runSweep(client: MisskeyClient, opts: SweepOptions): Promi
       checked: 0,
       kept: 0,
       toKick: [],
+      toSyncRoles: [],
       errored: 0,
     };
   }
@@ -160,6 +180,7 @@ export async function runSweep(client: MisskeyClient, opts: SweepOptions): Promi
     checked: 0,
     kept: 0,
     toKick: [],
+    toSyncRoles: [],
     errored: 0,
   };
 
@@ -167,10 +188,14 @@ export async function runSweep(client: MisskeyClient, opts: SweepOptions): Promi
     if (await isAllowlisted(link.discordId)) continue;
     result.checked++;
     try {
-      let { exists } = await client.checkUserExists(link.misskeyId);
+      const firstCheck = await client.checkUserExists(link.misskeyId);
+      let exists = firstCheck.exists;
+      let user = firstCheck.user;
       if (!exists) {
         await sleep(opts.recheckDelayMs);
-        exists = (await client.checkUserExists(link.misskeyId)).exists;
+        const second = await client.checkUserExists(link.misskeyId);
+        exists = second.exists;
+        user = second.user;
       }
       const { kick, newFailureCount } = decideAction(
         !exists,
@@ -190,6 +215,12 @@ export async function runSweep(client: MisskeyClient, opts: SweepOptions): Promi
         });
       } else {
         result.kept++;
+        // M4: 存在を確認したメンバーはロール同期対象に積む
+        result.toSyncRoles.push({
+          discordId: link.discordId,
+          guildId: link.guildId,
+          misskeyRoleIds: (user?.roles ?? []).map((r) => r.id),
+        });
       }
     } catch {
       // 429 / 5xx / ネットワーク等 → 判定保留（キックしない）

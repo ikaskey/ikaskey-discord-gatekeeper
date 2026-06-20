@@ -1,6 +1,13 @@
 import cron from "node-cron";
 import type { Client } from "discord.js";
-import { MisskeyClient, loadConfig, markKicked, runSweep } from "@gatekeeper/core";
+import {
+  computeRoleSync,
+  listActiveRoleMappings,
+  loadConfig,
+  markKicked,
+  MisskeyClient,
+  runSweep,
+} from "@gatekeeper/core";
 
 const config = loadConfig();
 const misskey = new MisskeyClient(config.misskey.host);
@@ -61,6 +68,59 @@ export async function performSweep(client: Client): Promise<void> {
     } catch (err) {
       // 失敗時は markKicked を呼ばない → status active のまま次回再試行
       console.error(`[sweep] kick failed for ${target.discordId}`, err);
+    }
+  }
+
+  // M4: 存在を確認したメンバーの Discord ロールを Misskey ロールへ差分同期
+  await syncRolesForMembers(client, result.toSyncRoles);
+}
+
+/**
+ * 連動設定に基づき、各メンバーの Discord ロールを Misskey 保有ロールへ差分同期する。
+ *
+ * @remarks
+ * 有効な {@link @gatekeeper/core#listActiveRoleMappings | 連動設定} が無ければ何もしない。
+ * 管理対象（マッピングに含まれる Discord ロール）のみを操作し、会員ロールや手動ロールは触らない。
+ *
+ * @param client - ログイン済みの discord.js {@link Client}
+ * @param targets - スイープで存在を確認したメンバーのロール同期対象
+ *
+ * @since 0.3.0
+ */
+async function syncRolesForMembers(
+  client: Client,
+  targets: { discordId: string; guildId: string; misskeyRoleIds: string[] }[],
+): Promise<void> {
+  if (targets.length === 0) return;
+  const mappings = await listActiveRoleMappings();
+  if (mappings.length === 0) return;
+
+  for (const target of targets) {
+    try {
+      const guild = await client.guilds.fetch(target.guildId);
+      const member = await guild.members.fetch(target.discordId).catch(() => null);
+      if (!member) continue;
+
+      const current = new Set(member.roles.cache.map((r) => r.id));
+      const plan = computeRoleSync(new Set(target.misskeyRoleIds), mappings, current);
+
+      if (plan.toAdd.length > 0) {
+        await member.roles.add(plan.toAdd, "Misskeyロール連動").catch((e: unknown) => {
+          console.error(`[sweep] role add failed for ${target.discordId}`, e);
+        });
+      }
+      if (plan.toRemove.length > 0) {
+        await member.roles.remove(plan.toRemove, "Misskeyロール連動").catch((e: unknown) => {
+          console.error(`[sweep] role remove failed for ${target.discordId}`, e);
+        });
+      }
+      if (plan.toAdd.length > 0 || plan.toRemove.length > 0) {
+        console.log(
+          `[sweep] roles synced for ${target.discordId}: +${plan.toAdd.length} -${plan.toRemove.length}`,
+        );
+      }
+    } catch (err) {
+      console.error(`[sweep] role sync failed for ${target.discordId}`, err);
     }
   }
 }
