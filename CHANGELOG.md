@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+## [0.8.6] - 2026-06-20
+
+### Added
+
+- **`/unlink` スラッシュコマンド**（モデレーター以上）。指定ユーザーのいかすきー連携を、
+  **確認ボタンを挟んで**解除する。解除後、対象者は別の Misskey アカウントで認証し直せる
+  （会員ロール・参加自体は変更しない）。監査ログ `link_unlink` を記録。
+
 ## [0.8.5] - 2026-06-20
 
 ### Added
@@ -184,7 +192,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.5...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.6...HEAD
+[0.8.6]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.5...v0.8.6
 [0.8.5]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.4...v0.8.5
 [0.8.4]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.2...v0.8.3
