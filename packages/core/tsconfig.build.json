@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "comment": "本番ビルド用。テストファイルは dist に出さない（型チェックは tsconfig.json 側で実施）",
+  "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts"]
+}

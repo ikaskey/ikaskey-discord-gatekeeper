@@ -1,5 +1,5 @@
-import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 /**
  * dev 用: cwd から上方向に .env を探して読み込む（best-effort）。
@@ -8,7 +8,7 @@ import { dirname, join } from 'node:path';
 function loadDotenvFromAncestors(): void {
   let dir = process.cwd();
   for (let i = 0; i < 6; i++) {
-    const candidate = join(dir, '.env');
+    const candidate = join(dir, ".env");
     if (existsSync(candidate)) {
       try {
         process.loadEnvFile(candidate);
@@ -27,7 +27,7 @@ loadDotenvFromAncestors();
 
 function requireEnv(name: string): string {
   const v = process.env[name];
-  if (v === undefined || v === '') {
+  if (v === undefined || v === "") {
     throw new Error(`環境変数 ${name} が設定されていません（.env.example を参照）`);
   }
   return v;
@@ -35,7 +35,7 @@ function requireEnv(name: string): string {
 
 function optionalEnv(name: string, fallback: string): string {
   const v = process.env[name];
-  return v === undefined || v === '' ? fallback : v;
+  return v === undefined || v === "" ? fallback : v;
 }
 
 export interface AppConfig {
@@ -61,18 +61,18 @@ export function loadConfig(): AppConfig {
   if (cached) return cached;
   cached = {
     discord: {
-      token: requireEnv('DISCORD_TOKEN'),
-      clientId: requireEnv('DISCORD_CLIENT_ID'),
-      guildId: requireEnv('DISCORD_GUILD_ID'),
-      verifiedRoleId: requireEnv('VERIFIED_ROLE_ID'),
+      token: requireEnv("DISCORD_TOKEN"),
+      clientId: requireEnv("DISCORD_CLIENT_ID"),
+      guildId: requireEnv("DISCORD_GUILD_ID"),
+      verifiedRoleId: requireEnv("VERIFIED_ROLE_ID"),
     },
     misskey: {
-      host: optionalEnv('MISSKEY_HOST', 'ikaskey.bktsk.com'),
-      appName: optionalEnv('MISSKEY_APP_NAME', 'いかすきー会員認証'),
+      host: optionalEnv("MISSKEY_HOST", "ikaskey.bktsk.com"),
+      appName: optionalEnv("MISSKEY_APP_NAME", "いかすきー会員認証"),
     },
     web: {
-      publicBaseUrl: requireEnv('PUBLIC_BASE_URL').replace(/\/$/, ''),
-      port: Number.parseInt(optionalEnv('WEB_PORT', '3001'), 10),
+      publicBaseUrl: requireEnv("PUBLIC_BASE_URL").replace(/\/$/, ""),
+      port: Number.parseInt(optionalEnv("WEB_PORT", "3001"), 10),
     },
   };
   return cached;

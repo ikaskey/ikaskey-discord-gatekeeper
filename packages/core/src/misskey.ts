@@ -43,31 +43,34 @@ export class MisskeyApiError extends Error {
     readonly body?: unknown,
   ) {
     super(message);
-    this.name = 'MisskeyApiError';
+    this.name = "MisskeyApiError";
   }
 }
 
 /** users/show で対象が存在しない or 凍結（404 NO_SUCH_USER） */
 export class NoSuchUserError extends MisskeyApiError {
   constructor(body?: unknown) {
-    super('NO_SUCH_USER', 404, body);
-    this.name = 'NoSuchUserError';
+    super("NO_SUCH_USER", 404, body);
+    this.name = "NoSuchUserError";
   }
 }
 
 /** トークンが無効・失効・アカウント削除（401 AUTHENTICATION_FAILED） */
 export class TokenInvalidError extends MisskeyApiError {
   constructor(body?: unknown) {
-    super('AUTHENTICATION_FAILED', 401, body);
-    this.name = 'TokenInvalidError';
+    super("AUTHENTICATION_FAILED", 401, body);
+    this.name = "TokenInvalidError";
   }
 }
 
 /** レート制限（429）。retryAfterSec 秒後に再試行 */
 export class RateLimitError extends MisskeyApiError {
-  constructor(readonly retryAfterSec: number | null, body?: unknown) {
-    super('RATE_LIMIT_EXCEEDED', 429, body);
-    this.name = 'RateLimitError';
+  constructor(
+    readonly retryAfterSec: number | null,
+    body?: unknown,
+  ) {
+    super("RATE_LIMIT_EXCEEDED", 429, body);
+    this.name = "RateLimitError";
   }
 }
 
@@ -88,19 +91,19 @@ export class MisskeyClient {
   /** MiAuth 認可URL（このURLにユーザーを誘導する） */
   buildMiauthUrl(session: string, opts: BuildMiauthUrlOptions): string {
     const url = new URL(`${this.base}/miauth/${session}`);
-    url.searchParams.set('name', opts.appName);
-    url.searchParams.set('callback', opts.callback);
-    url.searchParams.set('permission', opts.permission ?? 'read:account');
-    if (opts.iconUrl) url.searchParams.set('icon', opts.iconUrl);
+    url.searchParams.set("name", opts.appName);
+    url.searchParams.set("callback", opts.callback);
+    url.searchParams.set("permission", opts.permission ?? "read:account");
+    if (opts.iconUrl) url.searchParams.set("icon", opts.iconUrl);
     return url.toString();
   }
 
   /** トークン確定。ok=false は未認可/無効セッション */
   async miauthCheck(session: string): Promise<MiauthCheckResult> {
     const res = await fetch(`${this.base}/api/miauth/${session}/check`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: '{}',
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
     });
     if (!res.ok) {
       throw new MisskeyApiError(`miauth/check failed`, res.status, await safeJson(res));
@@ -111,9 +114,9 @@ export class MisskeyClient {
   /** 内部: 認証付き(任意) POST。エラーを型付き例外に変換 */
   private async call<T>(endpoint: string, params: unknown, token?: string): Promise<T> {
     const res = await fetch(`${this.base}/api/${endpoint}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify(params ?? {}),
@@ -127,7 +130,7 @@ export class MisskeyClient {
     if (res.status === 404) throw new NoSuchUserError(body);
     if (res.status === 401) throw new TokenInvalidError(body);
     if (res.status === 429) {
-      const retry = res.headers.get('Retry-After');
+      const retry = res.headers.get("Retry-After");
       throw new RateLimitError(retry ? Number.parseInt(retry, 10) : null, body);
     }
     throw new MisskeyApiError(`${endpoint} failed`, res.status, body);
@@ -135,7 +138,7 @@ export class MisskeyClient {
 
   /** ユーザー詳細（userId 指定）。非存在/凍結は NoSuchUserError */
   usersShow(userId: string): Promise<MisskeyUser> {
-    return this.call<MisskeyUser>('users/show', { userId });
+    return this.call<MisskeyUser>("users/show", { userId });
   }
 
   /** 存在確認。404 を boolean に変換（凍結も exists:false 扱い） */
@@ -151,12 +154,12 @@ export class MisskeyClient {
 
   /** トークンで本人取得。失効時は TokenInvalidError */
   getMe(token: string): Promise<MisskeyUser> {
-    return this.call<MisskeyUser>('i', {}, token);
+    return this.call<MisskeyUser>("i", {}, token);
   }
 
   /** インスタンスの公開ロール一覧（isPublic && isExplorable のみ返る） */
   rolesList(token: string): Promise<MisskeyRole[]> {
-    return this.call<MisskeyRole[]>('roles/list', {}, token);
+    return this.call<MisskeyRole[]>("roles/list", {}, token);
   }
 }
 

@@ -1,14 +1,14 @@
-import { prisma } from './db.js';
-import { generateNonce } from './ids.js';
-import type { Link, VerificationState } from './db.js';
+import { prisma } from "./db.js";
+import { generateNonce } from "./ids.js";
+import type { Link, VerificationState } from "./db.js";
 
 const DEFAULT_TTL_MS = 10 * 60 * 1000; // 認証URLの有効期限: 10分
 
 /** 同一Misskeyアカウントが別Discordに紐付こうとした場合 */
 export class MisskeyAlreadyLinkedError extends Error {
   constructor(readonly existingDiscordId: string) {
-    super('このいかすきーアカウントは既に別のDiscordアカウントに連携済みです');
-    this.name = 'MisskeyAlreadyLinkedError';
+    super("このいかすきーアカウントは既に別のDiscordアカウントに連携済みです");
+    this.name = "MisskeyAlreadyLinkedError";
   }
 }
 
@@ -78,7 +78,7 @@ export async function upsertLink(input: {
       username: input.username,
       misskeyHost: input.misskeyHost,
       token: input.token ?? null,
-      status: 'active',
+      status: "active",
       lastCheckedAt: new Date(),
     },
     update: {
@@ -86,7 +86,7 @@ export async function upsertLink(input: {
       username: input.username,
       misskeyHost: input.misskeyHost,
       token: input.token ?? null,
-      status: 'active',
+      status: "active",
       failureCount: 0,
       lastCheckedAt: new Date(),
     },

@@ -1,6 +1,6 @@
-import { serve } from '@hono/node-server';
-import { loadConfig } from '@gatekeeper/core';
-import app from './app.js';
+import { serve } from "@hono/node-server";
+import { loadConfig } from "@gatekeeper/core";
+import app from "./app.js";
 
 const config = loadConfig();
 

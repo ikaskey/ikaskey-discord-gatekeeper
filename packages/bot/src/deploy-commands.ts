@@ -1,10 +1,10 @@
-import { REST, Routes } from 'discord.js';
-import { loadConfig } from '@gatekeeper/core';
-import { allCommands } from './commands.js';
+import { REST, Routes } from "discord.js";
+import { loadConfig } from "@gatekeeper/core";
+import { allCommands } from "./commands.js";
 
 // ギルドコマンドは即時反映。起動時ではなく、このスクリプトで1回だけ流す。
 const config = loadConfig();
-const rest = new REST({ version: '10' }).setToken(config.discord.token);
+const rest = new REST({ version: "10" }).setToken(config.discord.token);
 const body = allCommands.map((c) => c.toJSON());
 
 const data = (await rest.put(

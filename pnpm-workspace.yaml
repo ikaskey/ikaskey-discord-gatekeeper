@@ -1,5 +1,5 @@
 packages:
-  - 'packages/*'
+  - "packages/*"
 
 # pnpm v10+: 設定は .npmrc ではなくここに置く
 # `pnpm deploy`(Docker本番ビルド) を injected モードで動かすために必須
@@ -8,11 +8,11 @@ inject-workspace-packages: true
 catalog:
   # TS7(ネイティブ版)への橋渡しメジャー。TS7 RCはtsup等がtypescriptのJS API(exports)非対応で不可→GA前後で移行
   typescript: ^6.0.0
-  vitest: ^3.2.0
+  # テストは Vite+(vp test=内蔵vitest4)へ集約したため、standalone vitest は廃止
 
 # postinstall ビルドを許可する依存（pnpm v10 は既定でブロックする）
 onlyBuiltDependencies:
-  - '@prisma/client'
-  - '@prisma/engines'
+  - "@prisma/client"
+  - "@prisma/engines"
   - prisma
   - esbuild

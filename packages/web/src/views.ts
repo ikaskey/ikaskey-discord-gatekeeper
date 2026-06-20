@@ -1,16 +1,16 @@
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (ch) => {
     switch (ch) {
-      case '&':
-        return '&amp;';
-      case '<':
-        return '&lt;';
-      case '>':
-        return '&gt;';
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
       case '"':
-        return '&quot;';
+        return "&quot;";
       default:
-        return '&#39;';
+        return "&#39;";
     }
   });
 }
@@ -40,7 +40,7 @@ function page(title: string, bodyHtml: string): string {
 
 export function successPage(username: string): string {
   return page(
-    '認証完了',
+    "認証完了",
     `<h1 class="ok">✅ 認証が完了しました</h1>
      <p><strong>@${escapeHtml(username)}</strong> として認証されました。<br />
      Discordに戻ると会員チャンネルが見えるようになっています。<br />
@@ -50,9 +50,9 @@ export function successPage(username: string): string {
 
 export function errorPage(message: string, detail?: string): string {
   return page(
-    '認証エラー',
+    "認証エラー",
     `<h1 class="err">⚠️ 認証できませんでした</h1>
      <p>${escapeHtml(message)}</p>
-     ${detail ? `<p style="font-size:.85rem;color:#6e7681">${escapeHtml(detail)}</p>` : ''}`,
+     ${detail ? `<p style="font-size:.85rem;color:#6e7681">${escapeHtml(detail)}</p>` : ""}`,
   );
 }

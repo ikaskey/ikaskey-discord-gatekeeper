@@ -10,14 +10,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@discordjs/rest": "^2.4.0",
     "@gatekeeper/core": "workspace:*",
     "@hono/node-server": "^1.13.0",
-    "@discordjs/rest": "^2.4.0",
     "discord-api-types": "^0.37.100",
     "hono": "^4.6.0"
   },
   "devDependencies": {
     "@hono/vite-dev-server": "^0.18.0",
+    "@types/node": "^26.0.0",
     "tsup": "^8.3.0",
     "typescript": "catalog:",
     "vite": "^6.0.0"

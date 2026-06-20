@@ -12,7 +12,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && rm -rf dist/generated && cp -r src/generated dist/generated",
+    "build": "tsc -p tsconfig.build.json && rm -rf dist/generated && cp -r src/generated dist/generated",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -22,6 +22,7 @@
     "@prisma/client": "^6.3.0"
   },
   "devDependencies": {
+    "@types/node": "^26.0.0",
     "prisma": "^6.3.0",
     "typescript": "catalog:"
   }

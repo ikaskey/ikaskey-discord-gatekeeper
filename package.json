@@ -2,24 +2,31 @@
   "name": "ikaskey-discord-gatekeeper",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.33.0",
-  "engines": {
-    "node": ">=24"
-  },
   "scripts": {
     "build": "pnpm -r build",
     "dev:web": "pnpm --filter @gatekeeper/web dev",
     "dev:bot": "pnpm --filter @gatekeeper/bot dev",
     "bot:deploy-commands": "pnpm --filter @gatekeeper/bot deploy-commands",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vp test",
+    "test:watch": "vp test --watch",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "fmt:check": "vp fmt --check",
+    "check": "vp check",
     "typecheck": "pnpm -r typecheck",
+    "docs": "pnpm --filter @gatekeeper/docs build",
     "prisma:generate": "pnpm --filter @gatekeeper/core prisma:generate",
     "prisma:migrate": "pnpm --filter @gatekeeper/core prisma:migrate",
     "prisma:deploy": "pnpm --filter @gatekeeper/core prisma:deploy"
   },
   "devDependencies": {
+    "@types/node": "^26.0.0",
     "typescript": "catalog:",
-    "vitest": "catalog:"
-  }
+    "vite-plus": "^0.2.1",
+    "vitest": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@10.33.0"
 }
