@@ -7,6 +7,19 @@
 
 ## [Unreleased]
 
+## [0.8.5] - 2026-06-20
+
+### Added
+
+- 管理画面のロール連動に **条件(conditional)ロール対応** を追加。`roles/list` は manual ロールしか
+  返さない（`admin/roles/list` は `read:account` スコープ外で利用不可）ため、連動先選択に
+  「**手動でIDを入力**」を用意し、ロールID＋表示名で任意の Misskey ロール（条件ロール含む）を連動可能に。
+
+### Note
+
+- 同期ロジック自体は元から条件ロール対応（`users/show` / `/api/i` のどちらも条件ロールを返す）。
+  これまでは管理画面で条件ロールを選べなかったため連動できなかっただけ。
+
 ## [0.8.4] - 2026-06-20
 
 ### Added
@@ -171,7 +184,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.4...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.5...HEAD
+[0.8.5]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.4...v0.8.5
 [0.8.4]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.1...v0.8.2

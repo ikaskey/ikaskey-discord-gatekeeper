@@ -4,11 +4,18 @@ import { ApiError, api } from "../api.js";
 import type { MisskeyRole, RoleMapping } from "../types.js";
 import { Button, Card, ErrorBanner, Loading, SectionTitle, TextInput } from "./ui.js";
 
+/** ドロップダウンの「手動でIDを入力」を表すセンチネル値。 */
+const MANUAL_OPTION = "__manual__";
+
 /**
  * 「ロール連動」タブ。Misskey ロールと Discord ロールの対応表を管理する。
  *
  * - マッピング一覧の表示／enabled トグル／削除。
- * - Misskey ロールをプルダウン選択して新規 upsert。
+ * - Misskey ロールをプルダウン選択、または ID 手動入力（条件ロール等）で新規 upsert。
+ *
+ * @remarks
+ * プルダウンの選択肢は `roles/list`（公開の **manual** ロールのみ）。条件(conditional)ロールは
+ * ここに出ないため、「手動でIDを入力」を選んでロールID＋表示名を入力して連動する。
  *
  * @since 0.4.0
  */
@@ -22,8 +29,13 @@ export function RoleMappingsTab(): ReactNode {
 
   // 追加フォーム状態
   const [selectedRoleId, setSelectedRoleId] = useState("");
+  const [manualRoleId, setManualRoleId] = useState("");
+  const [manualRoleName, setManualRoleName] = useState("");
   const [discordRoleId, setDiscordRoleId] = useState("");
   const [enabled, setEnabled] = useState(true);
+
+  /** ドロップダウンで「手動入力」を選んでいるか（条件ロール等、一覧に無いロール用）。 */
+  const isManual = selectedRoleId === MANUAL_OPTION;
 
   /** マッピング一覧を再取得する。 */
   async function reload(): Promise<void> {
@@ -90,20 +102,25 @@ export function RoleMappingsTab(): ReactNode {
     }
   }
 
-  /** 追加フォームの送信。 */
+  /** 追加フォームの送信。手動入力時は入力した ID/名前を、選択時はプルダウンの値を使う。 */
   async function submit(): Promise<void> {
-    const role = roles.find((r) => r.id === selectedRoleId);
-    if (!role || !discordRoleId.trim()) return;
+    const roleId = isManual ? manualRoleId.trim() : selectedRoleId;
+    const roleName = isManual
+      ? manualRoleName.trim()
+      : (roles.find((r) => r.id === selectedRoleId)?.name ?? "");
+    if (!roleId || !roleName || !discordRoleId.trim()) return;
     setBusy(true);
     setError(null);
     try {
       await api.putMapping({
-        misskeyRoleId: role.id,
-        misskeyRoleName: role.name,
+        misskeyRoleId: roleId,
+        misskeyRoleName: roleName,
         discordRoleId: discordRoleId.trim(),
         enabled,
       });
       setSelectedRoleId("");
+      setManualRoleId("");
+      setManualRoleName("");
       setDiscordRoleId("");
       setEnabled(true);
       await reload();
@@ -174,13 +191,17 @@ export function RoleMappingsTab(): ReactNode {
       <Card>
         <SectionTitle>マッピングを追加 / 更新</SectionTitle>
         {rolesError && <ErrorBanner message={rolesError} />}
+        <p className="mb-2 text-xs text-[#8b949e]">
+          プルダウンには公開の<strong>manual</strong>ロールのみ表示されます。
+          <strong>条件(conditional)ロール</strong>
+          は「手動でIDを入力」を選び、ロールID（Misskeyのロール設定画面のURL末尾）と表示名を入力してください。
+        </p>
         <div className="mt-2 grid gap-3 sm:grid-cols-2">
           <label className="block text-sm text-[#8b949e]">
             <span className="mb-1 block">Misskey ロール</span>
             <select
               value={selectedRoleId}
               onChange={(e) => setSelectedRoleId(e.target.value)}
-              disabled={roles.length === 0}
               className="w-full rounded-md border border-[#30363d] bg-[#0d1117] px-3 py-1.5 text-sm text-[#e6edf3] focus:border-[#86b300] focus:outline-none"
             >
               <option value="">選択してください</option>
@@ -189,6 +210,7 @@ export function RoleMappingsTab(): ReactNode {
                   {r.name}
                 </option>
               ))}
+              <option value={MANUAL_OPTION}>手動でIDを入力（条件ロール等）</option>
             </select>
           </label>
           <label className="block text-sm text-[#8b949e]">
@@ -200,6 +222,28 @@ export function RoleMappingsTab(): ReactNode {
               ariaLabel="Discord ロール ID"
             />
           </label>
+          {isManual && (
+            <>
+              <label className="block text-sm text-[#8b949e]">
+                <span className="mb-1 block">Misskey ロール ID（手動）</span>
+                <TextInput
+                  value={manualRoleId}
+                  onChange={setManualRoleId}
+                  placeholder="例: 9f7wt9c080"
+                  ariaLabel="Misskey ロール ID"
+                />
+              </label>
+              <label className="block text-sm text-[#8b949e]">
+                <span className="mb-1 block">表示名（任意のラベル）</span>
+                <TextInput
+                  value={manualRoleName}
+                  onChange={setManualRoleName}
+                  placeholder="例: でんせつ+2"
+                  ariaLabel="Misskey ロール表示名"
+                />
+              </label>
+            </>
+          )}
         </div>
         <div className="mt-3 flex items-center justify-between">
           <label className="flex items-center gap-2 text-sm text-[#e6edf3]">
@@ -212,7 +256,11 @@ export function RoleMappingsTab(): ReactNode {
             有効にする
           </label>
           <Button
-            disabled={busy || !selectedRoleId || !discordRoleId.trim()}
+            disabled={
+              busy ||
+              !discordRoleId.trim() ||
+              (isManual ? !manualRoleId.trim() || !manualRoleName.trim() : !selectedRoleId)
+            }
             onClick={() => void submit()}
           >
             保存
