@@ -165,6 +165,31 @@ export function findLinkByDiscordId(discordId: string): Promise<Link | null> {
   return prisma.link.findUnique({ where: { discordId } });
 }
 
+/**
+ * すべての {@link Link}（認証済み連携）を新しい順で取得する（管理画面の連携一覧用）。
+ *
+ * @returns `linkedAt` 降順の {@link Link} 配列
+ * @since 0.8.2
+ */
+export function listLinks(): Promise<Link[]> {
+  return prisma.link.findMany({ orderBy: { linkedAt: "desc" } });
+}
+
+/**
+ * Discord ユーザー ID で {@link Link} を削除（連携解除）する。
+ *
+ * @remarks
+ * 解除後、当人は認証パネルから別の Misskey アカウントで認証し直せる。該当が無くてもエラーにしない。
+ *
+ * @param discordId - 解除対象の Discord ユーザー ID
+ * @returns 削除した件数（0 または 1）
+ * @since 0.8.2
+ */
+export async function deleteLinkByDiscordId(discordId: string): Promise<number> {
+  const res = await prisma.link.deleteMany({ where: { discordId } });
+  return res.count;
+}
+
 export async function upsertLink(input: {
   discordId: string;
   guildId: string;

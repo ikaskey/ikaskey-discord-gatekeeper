@@ -6,10 +6,12 @@ import {
   createAdminSession,
   deleteAdminSession,
   deleteAllowlist,
+  deleteLinkByDiscordId,
   deleteRoleMapping,
   getValidAdminSession,
   listAllowlist,
   listAuditLogs,
+  listLinks,
   listRoleMappings,
   loadConfig,
   MisskeyClient,
@@ -221,6 +223,37 @@ adminApp.delete("/api/allowlist/:discordId", async (c) => {
     targetDiscordId: discordId,
   });
   return c.json({ ok: true });
+});
+
+// ---- Links（連携の一覧・解除） ----
+/** 認証済み連携の一覧（トークンは返さない）。 */
+adminApp.get("/api/links", async (c) => {
+  const links = await listLinks();
+  return c.json(
+    links.map((l) => ({
+      discordId: l.discordId,
+      misskeyId: l.misskeyId,
+      username: l.username,
+      misskeyHost: l.misskeyHost,
+      status: l.status,
+      linkedAt: l.linkedAt,
+      lastCheckedAt: l.lastCheckedAt,
+    })),
+  );
+});
+
+/** 連携解除（当人は別アカウントで認証し直せる）。 */
+adminApp.delete("/api/links/:discordId", async (c) => {
+  const admin = c.get("admin");
+  const discordId = c.req.param("discordId");
+  const removed = await deleteLinkByDiscordId(discordId);
+  await writeAudit({
+    type: "link_unlink",
+    summary: `連携解除: ${discordId}`,
+    actor: admin.misskeyId,
+    targetDiscordId: discordId,
+  });
+  return c.json({ ok: true, removed });
 });
 
 // ---- AuditLog ----
