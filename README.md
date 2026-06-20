@@ -86,15 +86,26 @@ pnpm build       # 本番ビルド（core=tsc / bot,web=tsup）
 
 ## デプロイ（Docker）
 
+イメージは GitHub Actions（`.github/workflows/docker.yml`）が ARM64 でビルドし
+`ghcr.io/ikaskey/ikaskey-discord-gatekeeper-{web,bot,migrate}` へ push する。サーバーは pull するだけ。
+
 ```bash
 cp .env.example .env   # 本番値。DATABASE_URL=file:/data/prod.db に変更
-docker compose up -d --build
+
+# 初回 / 更新（GitHub ビルド済みイメージを利用・推奨）
+git pull
+docker compose pull
+docker compose up -d
 ```
 
+- ローカルでビルドする場合は `docker compose up -d --build`。
 - `migrate` サービスが起動前に `prisma migrate deploy` を適用 → `web`/`bot` が起動。
 - SQLite は `./data/prod.db` をバインドマウントで永続化。
 - `web` は `127.0.0.1:3001` で待ち受ける。任意のリバースプロキシ/トンネルで公開し、
   公開URLを `PUBLIC_BASE_URL` に一致させる。
+- スラッシュコマンド登録: `docker run --rm --env-file .env -w /app ghcr.io/ikaskey/ikaskey-discord-gatekeeper-migrate:latest pnpm bot:deploy-commands`
+
+> ghcr のパッケージは初回 push 後、リポジトリ設定でパッケージを **public** にすると、サーバーは認証なしで pull できる。
 
 ## 既存サーバーへの段階移行
 
