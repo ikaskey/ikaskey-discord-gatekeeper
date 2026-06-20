@@ -73,6 +73,19 @@ export interface AppConfig {
     /** Web サーバーの待ち受けポート（環境変数 `WEB_PORT`、既定: `3001`） */
     port: number;
   };
+  /**
+   * 定期検証スイープ（退会連動の即キック）に関する設定。
+   *
+   * @since 0.2.0
+   */
+  sweep: {
+    /** スイープ実行の cron 式（環境変数 `SWEEP_CRON`、既定は 6 時間ごと = 0,6,12,18 時） */
+    cron: string;
+    /** 連続「消滅」確認がこの回数に達したらキック（環境変数 `SWEEP_FAILURE_THRESHOLD`、既定: `1`） */
+    failureThreshold: number;
+    /** 同一スイープ内で「消滅」を再確認する待ち時間ms（環境変数 `SWEEP_RECHECK_DELAY_MS`、既定: `3000`） */
+    recheckDelayMs: number;
+  };
 }
 
 let cached: AppConfig | undefined;
@@ -111,6 +124,11 @@ export function loadConfig(): AppConfig {
     web: {
       publicBaseUrl: requireEnv("PUBLIC_BASE_URL").replace(/\/$/, ""),
       port: Number.parseInt(optionalEnv("WEB_PORT", "3001"), 10),
+    },
+    sweep: {
+      cron: optionalEnv("SWEEP_CRON", "0 0,6,12,18 * * *"),
+      failureThreshold: Number.parseInt(optionalEnv("SWEEP_FAILURE_THRESHOLD", "1"), 10),
+      recheckDelayMs: Number.parseInt(optionalEnv("SWEEP_RECHECK_DELAY_MS", "3000"), 10),
     },
   };
   return cached;

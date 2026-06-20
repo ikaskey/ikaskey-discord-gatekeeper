@@ -20,6 +20,7 @@ import { Client, Events, GatewayIntentBits, MessageFlags } from "discord.js";
 import type { Interaction } from "discord.js";
 import { createVerificationState, loadConfig } from "@gatekeeper/core";
 import { sendVerifyPanel, VERIFY_BUTTON_ID } from "./panel.js";
+import { startSweepSchedule } from "./sweep.js";
 
 const config = loadConfig();
 
@@ -32,6 +33,8 @@ const client = new Client({
 
 client.once(Events.ClientReady, (c) => {
   console.log(`[bot] logged in as ${c.user.tag} (${c.user.id})`);
+  // 退会連動: 定期検証スイープを開始（消滅/凍結を検知して即キック）
+  startSweepSchedule(c);
 });
 
 /**

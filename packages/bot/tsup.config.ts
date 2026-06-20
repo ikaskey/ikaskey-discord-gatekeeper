@@ -8,5 +8,5 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   // discord.js / @gatekeeper/core は node_modules から実行時解決（バンドルしない）
-  external: ["discord.js", "@gatekeeper/core", "@prisma/client"],
+  external: ["discord.js", "@gatekeeper/core", "@prisma/client", "node-cron"],
 });
