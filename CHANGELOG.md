@@ -7,6 +7,13 @@
 
 ## [Unreleased]
 
+## [0.8.8] - 2026-06-20
+
+### Changed
+
+- ドキュメントの構成図を **Mermaid 図** 化（README の「認証フロー」「パッケージ構成」）。GitHub では
+  ネイティブ描画され、TypeDoc サイト(GitHub Pages)では `typedoc-plugin-mermaid` で描画する。
+
 ## [0.8.7] - 2026-06-20
 
 ### Fixed
@@ -201,7 +208,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.7...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.8...HEAD
+[0.8.8]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.7...v0.8.8
 [0.8.7]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.6...v0.8.7
 [0.8.6]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.5...v0.8.6
 [0.8.5]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.4...v0.8.5

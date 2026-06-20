@@ -19,15 +19,39 @@ Pages → Source = "GitHub Actions"）。ローカル生成は `pnpm run docs:bu
 
 ## アーキテクチャ
 
+### 認証フロー
+
+```mermaid
+flowchart TD
+    U([Discord ユーザー])
+    BOT["bot（discord.js 常駐）"]
+    WEB["web（Hono）"]
+    MK([Misskey])
+    DB[("SQLite（Prisma）")]
+    SWEEP["定期検証ジョブ（退会連動）"]
+
+    U -->|"①認証ボタン押下"| BOT
+    BOT -->|"②state 発行＋認証 URL（ephemeral）"| U
+    U -->|"認証 URL を開く"| WEB
+    WEB -->|"③MiAuth へリダイレクト"| MK
+    MK -->|"④ユーザーが許可"| WEB
+    WEB -->|"⑤miauth/check で token+user 取得"| MK
+    WEB -->|"⑥Link 保存（1:1）＋会員ロール付与（REST）"| DB
+    SWEEP -->|"消滅/凍結を検知 → キック"| DB
 ```
-[Discordユーザー] ──①ボタン──▶ [bot(discord.js常駐)] ──②state発行＋認証URL(ephemeral)
-                                                              │
-                                                              ▼
-                            [web(Hono)] ──③MiAuthへリダイレクト──▶ [Misskey]
-                                  │ ⑤miauth/check でtoken+user取得 ◀──④許可
-                                  │ ⑥Link保存（1:1）＋会員ロール付与(REST)
-                                  ▼
-                              [SQLite(Prisma)]  ◀── 定期検証ジョブ(M3)
+
+### パッケージ構成
+
+```mermaid
+flowchart LR
+    admin["@gatekeeper/admin-ui<br/>React SPA（管理画面）"]
+    bot["@gatekeeper/bot<br/>discord.js 常駐"]
+    web["@gatekeeper/web<br/>Hono（認証/管理 API）"]
+    core["@gatekeeper/core<br/>Misskey クライアント・Prisma・設定"]
+
+    admin -->|配信される| web
+    bot --> core
+    web --> core
 ```
 
 - **bot** (`@gatekeeper/bot`): discord.js v14 常駐。認証パネル設置・ボタン処理・state発行・新規参加検知。
