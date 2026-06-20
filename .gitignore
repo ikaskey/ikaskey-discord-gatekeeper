@@ -20,3 +20,6 @@ packages/core/src/generated/
 # ローカルのbuildx不全回避用に生成する検証用Dockerfile（リポジトリには含めない）
 Dockerfile.legacy
 docs-site/
+
+# admin-ui のビルド成果物（web が配信。生成物）
+packages/web/public/

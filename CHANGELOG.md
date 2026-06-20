@@ -7,6 +7,22 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-20
+
+### Added
+
+- **M5: 管理画面** — モデレーター/管理者向けの Web 管理 UI（`/admin`）。
+  - 認証は **MiAuth**。`/api/i` の `isModerator` / `isAdministrator` でゲートし、
+    署名付き Cookie（`ADMIN_COOKIE_SECRET`）でセッション管理（`AdminSession`）。
+  - 管理 API（web/Hono 同居）: ロール連動設定・検証除外リスト・監査ログ・Misskey 公開ロール一覧。
+  - `@gatekeeper/admin-ui`: Vite + React 19 + Tailwind v4 の SPA（web が `public/admin` から配信）。
+  - `@gatekeeper/core`: `AdminSession` / `AuditLog` モデル、`createAdminSession` /
+    `getValidAdminSession` / `deleteAdminSession`、`writeAudit` / `listAuditLogs`、
+    `listAllowlist` / `upsertAllowlist` / `deleteAllowlist`、`MisskeyUser.isModerator` /
+    `isAdministrator`（`@since 0.4.0`）。
+  - 監査ログ記録: 会員認証・キック・管理ログイン・連動設定変更・除外リスト変更。
+- 設定 `AppConfig.admin.cookieSecret`（`ADMIN_COOKIE_SECRET`）。
+
 ## [0.3.0] - 2026-06-20
 
 ### Added
@@ -53,7 +69,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/releases/tag/v0.1.0

@@ -59,6 +59,16 @@ export interface MisskeyUser {
   isBot?: boolean;
   /** アカウント作成日時（ISO 8601 文字列） */
   createdAt?: string;
+  /**
+   * モデレーター権限を持つか（`/api/i` で本人取得時のみ返る）。
+   * @since 0.4.0
+   */
+  isModerator?: boolean;
+  /**
+   * 管理者権限を持つか（`/api/i` で本人取得時のみ返る）。
+   * @since 0.4.0
+   */
+  isAdministrator?: boolean;
 }
 
 /**
