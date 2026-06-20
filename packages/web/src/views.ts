@@ -7,29 +7,7 @@
  */
 
 import { brandHeadTags } from "./brand.js";
-
-/**
- * HTML 特殊文字をエスケープし、XSS を防ぐための内部ヘルパー。
- *
- * @param s - エスケープ対象の文字列
- * @returns `&`, `<`, `>`, `"`, `'` を実体参照に変換した文字列
- */
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (ch) => {
-    switch (ch) {
-      case "&":
-        return "&amp;";
-      case "<":
-        return "&lt;";
-      case ">":
-        return "&gt;";
-      case '"':
-        return "&quot;";
-      default:
-        return "&#39;";
-    }
-  });
-}
+import { escapeHtml } from "./html.js";
 
 /**
  * 共通レイアウト(doctype・head・スタイル)で本文 HTML を包む内部ヘルパー。

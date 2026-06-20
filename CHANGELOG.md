@@ -7,6 +7,17 @@
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-06-21
+
+### Changed
+
+- **リファクタ**: web の認証/自動参加で重複していたロール連動処理を `syncMemberRoles` に集約。
+  `/api/i` を1回だけ呼んで Misskey ロール（M4）とモデレーター/管理者（M7）を取得し、現在ロールも1回だけ
+  取得して**まとめて差分適用**（API 呼び出し削減・`app.ts`/`join.ts` の重複解消・bot の sweep と同形）。
+- **リファクタ**: 重複していた HTML エスケープ関数を `web/src/html.ts` の `escapeHtml` に共通化
+  （`views.ts` / `brand.ts`）。
+- README の「アーキテクチャ」に**デプロイ構成図（Mermaid）**と**データモデル**を追記。
+
 ## [0.8.10] - 2026-06-21
 
 ### Changed
@@ -224,7 +235,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.10...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.10...v0.9.0
 [0.8.10]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.9...v0.8.10
 [0.8.9]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.8...v0.8.9
 [0.8.8]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.7...v0.8.8
