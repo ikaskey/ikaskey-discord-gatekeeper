@@ -7,6 +7,17 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-20
+
+### Added
+
+- **Phase 3: 未認証メンバーのキック** — `/migration-purge` コマンド（管理者のみ）。
+  - 既定 **dry-run**（プレビューのみ）。実キックは `MIGRATION_PURGE_ENABLED=true` も必須（二重ゲート）。
+  - 対象: Bot でない / 会員ロール無し / Allowlist 外 / 参加から `grace_days`（既定 14）日以上。
+    `limit`（既定 50）で 1 回あたりの上限。`member.kickable` のみキックし監査ログに記録。
+  - `@gatekeeper/core`: `isPurgeCandidate`（純関数・テスト付き、`@since 0.6.0`）、
+    `AppConfig.migration.purgeEnabled`。
+
 ## [0.5.0] - 2026-06-20
 
 ### Added
@@ -80,7 +91,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.2.0...v0.3.0

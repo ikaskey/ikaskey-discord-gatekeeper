@@ -71,6 +71,37 @@ export const migrationStatusCommand = new SlashCommandBuilder()
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild);
 
 /**
+ * `/migration-purge` スラッシュコマンドの定義（段階移行 Phase 3 の未認証キック）。
+ *
+ * @remarks
+ * 既定で dry-run（プレビューのみ）。実キックは環境変数 `MIGRATION_PURGE_ENABLED=true` も必要。
+ * 既定でサーバー管理権限（Manage Guild）を持つメンバーのみが実行できる。
+ *
+ * @see {@link allCommands}
+ * @since 0.6.0
+ */
+export const migrationPurgeCommand = new SlashCommandBuilder()
+  .setName("migration-purge")
+  .setDescription("未認証メンバーをキック（Phase 3）。既定は dry-run プレビュー")
+  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+  .addBooleanOption((o) =>
+    o.setName("dry_run").setDescription("プレビューのみ（既定: true）。false で実キック"),
+  )
+  .addIntegerOption((o) =>
+    o
+      .setName("grace_days")
+      .setDescription("参加からこの日数以上の未認証を対象（既定: 14）")
+      .setMinValue(0),
+  )
+  .addIntegerOption((o) =>
+    o
+      .setName("limit")
+      .setDescription("1回でキックする上限（既定: 50）")
+      .setMinValue(1)
+      .setMaxValue(200),
+  );
+
+/**
  * デプロイ対象となる全スラッシュコマンドの一覧。
  *
  * @remarks
@@ -80,6 +111,12 @@ export const migrationStatusCommand = new SlashCommandBuilder()
  * @see {@link verifyPanelCommand}
  * @see {@link roleMapCommand}
  * @see {@link migrationStatusCommand}
+ * @see {@link migrationPurgeCommand}
  * @since 0.1.0
  */
-export const allCommands = [verifyPanelCommand, roleMapCommand, migrationStatusCommand];
+export const allCommands = [
+  verifyPanelCommand,
+  roleMapCommand,
+  migrationStatusCommand,
+  migrationPurgeCommand,
+];
