@@ -7,6 +7,15 @@
 
 ## [Unreleased]
 
+## [0.8.7] - 2026-06-20
+
+### Fixed
+
+- `/unlink` の堅牢性向上（コードレビュー指摘対応）。
+  - 確認確定時に連携を**引き直してから削除**し、実際に解除した Misskey ユーザー名を結果表示（TOCTOU 解消）。
+  - 確認/キャンセルの `interaction.update` を握りつぶし、トークン失効（約15分）後も無害化。
+  - 監査ログを web 側と統一（summary `連携解除: ${id}`、actor は実行者の Misskey ID を優先）。
+
 ## [0.8.6] - 2026-06-20
 
 ### Added
@@ -192,7 +201,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.6...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.7...HEAD
+[0.8.7]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.6...v0.8.7
 [0.8.6]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.5...v0.8.6
 [0.8.5]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.4...v0.8.5
 [0.8.4]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.3...v0.8.4

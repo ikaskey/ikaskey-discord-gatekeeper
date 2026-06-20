@@ -56,35 +56,58 @@ export async function handleUnlink(interaction: ChatInputCommandInteraction): Pr
  *
  * @remarks
  * 認可（モデレーター以上）は呼び出し側で再判定済みとする。`customId` 末尾の Discord ユーザー ID を
- * 対象とする。監査ログ（`link_unlink`）を記録する。
+ * 対象とする。確認表示〜押下の間に連携が変わっている可能性があるため**削除前に引き直し**、
+ * 実際に解除した Misskey ユーザー名を結果に表示する。監査ログ（`link_unlink`、web 側と同形式）を記録する。
+ * インタラクションのトークン失効（約15分）に備え `update` は握りつぶす。
  *
  * @param interaction - 確認ボタンのインタラクション
  * @since 0.8.6
  */
 export async function handleUnlinkConfirm(interaction: ButtonInteraction): Promise<void> {
   const discordId = interaction.customId.slice(UNLINK_CONFIRM_PREFIX.length);
+
+  // 表示時点から状態が変わっている可能性があるため、削除前に最新の連携を引き直す
+  const link = await findLinkByDiscordId(discordId);
+  if (!link) {
+    await interaction
+      .update({ content: `<@${discordId}> の連携は既に存在しませんでした。`, components: [] })
+      .catch(() => {});
+    return;
+  }
+
   const removed = await deleteLinkByDiscordId(discordId);
+  // 実行者の識別子は web 側（Misskey ID）に揃える。Discord 管理者バイパス等で連携が無ければ Discord ID。
+  const actorLink = await findLinkByDiscordId(interaction.user.id);
   await writeAudit({
     type: "link_unlink",
-    summary: `連携解除（コマンド）: ${discordId}`,
-    actor: interaction.user.id,
+    summary: `連携解除: ${discordId}`,
+    actor: actorLink?.misskeyId ?? interaction.user.id,
     targetDiscordId: discordId,
   }).catch(() => {});
-  await interaction.update({
-    content:
-      removed > 0
-        ? `✅ <@${discordId}> のいかすきー連携を解除しました。本人は別アカウントで認証し直せます。`
-        : `<@${discordId}> の連携は既に存在しませんでした。`,
-    components: [],
-  });
+
+  const host = link.misskeyHost ? `@${link.misskeyHost}` : "";
+  await interaction
+    .update({
+      content:
+        removed > 0
+          ? `✅ <@${discordId}>（@${link.username}${host}）のいかすきー連携を解除しました。本人は別アカウントで認証し直せます。`
+          : `<@${discordId}> の連携は既に解除されていました。`,
+      components: [],
+    })
+    .catch(() => {});
 }
 
 /**
  * 連携解除のキャンセルボタン押下時の処理。
  *
+ * @remarks
+ * トークン失効（約15分）に備え `update` は握りつぶす。
+ *
  * @param interaction - キャンセルボタンのインタラクション
  * @since 0.8.6
  */
 export async function handleUnlinkCancel(interaction: ButtonInteraction): Promise<void> {
-  await interaction.update({ content: "連携解除をキャンセルしました。", components: [] });
+  await interaction
+    .update({ content: "連携解除をキャンセルしました。", components: [] })
+    .catch(() => {});
 }
