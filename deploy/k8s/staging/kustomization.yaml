@@ -1,0 +1,20 @@
+# ステージング overlay：bot を 0 replica にして Gateway 二重接続を避ける。
+# web は @discordjs/rest（REST のみ・Gateway を張らない）ので、本番と同じ DISCORD_TOKEN でも
+# 本番 bot と衝突しない。これで Postgres 対応・migrate・web の水平スケールを安全に検証できる。
+#
+#   kubectl apply -f deploy/k8s/secret.yaml      # 先にシークレット
+#   kubectl apply -k deploy/k8s/staging/         # postgres + migrate + web（bot は 0）
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+
+patches:
+  - target:
+      kind: Deployment
+      name: bot
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 0
