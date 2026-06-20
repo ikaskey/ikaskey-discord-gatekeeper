@@ -34,7 +34,7 @@ import { adminApp } from "./admin.js";
 import { addGuildMemberRole, getGuildMemberRoleIds, removeGuildMemberRole } from "./discord.js";
 import { joinApp } from "./join.js";
 import { syncMisskeyModAdminRoles } from "./rolesync.js";
-import { errorPage, successPage } from "./views.js";
+import { errorPage, successPage, topPage } from "./views.js";
 
 const config = loadConfig();
 const misskey = new MisskeyClient(config.misskey.host);
@@ -57,6 +57,16 @@ const app = new Hono();
  * 常に `{ ok: true }` を JSON で返す。死活監視・ロードバランサのプローブ用。
  */
 app.get("/healthz", (c) => c.json({ ok: true }));
+
+// トップページ（サービス説明＋未参加者向け参加導線）
+app.get("/", (c) =>
+  c.html(
+    topPage({
+      appName: config.misskey.appName,
+      joinEnabled: Boolean(config.discord.clientSecret && config.admin.cookieSecret),
+    }),
+  ),
+);
 
 // 管理画面（M5）を /admin 配下にマウント
 app.route("/admin", adminApp);

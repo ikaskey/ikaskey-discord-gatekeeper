@@ -121,3 +121,29 @@ export function errorPage(message: string, detail?: string): string {
      ${detail ? `<p style="font-size:.85rem;color:#6e7681">${escapeHtml(detail)}</p>` : ""}`,
   );
 }
+
+/**
+ * トップページ（`/`）の HTML を生成する。
+ *
+ * @remarks
+ * サービスの説明と、未参加者向けの参加導線（自動参加が有効な場合）を表示する。
+ * 既存メンバーには Discord 内の認証パネルから認証するよう案内する。
+ *
+ * @param opts.appName - 表示するアプリ名（内部でエスケープ）
+ * @param opts.joinEnabled - 自動参加フロー（M6）が有効か。`true` なら参加ボタンを表示する
+ * @returns 完全な HTML ドキュメント
+ * @since 0.8.4
+ */
+export function topPage(opts: { appName: string; joinEnabled: boolean }): string {
+  const joinCta = opts.joinEnabled
+    ? `<p><a class="btn" href="/join">Discordサーバーに参加する</a></p>`
+    : "";
+  return page(
+    opts.appName,
+    `<h1>🦑 ${escapeHtml(opts.appName)}</h1>
+     <p>これは「いかすきー」会員向け Discord の認証サービスです。<br />
+     いかすきー（Misskey）アカウントをお持ちの方が対象です。</p>
+     ${joinCta}
+     <p class="hint">すでにサーバーに参加済みの方は、Discord 内の認証パネルのボタンから認証してください。</p>`,
+  );
+}
