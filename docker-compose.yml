@@ -1,9 +1,17 @@
 # Docker での常駐運用。web は 127.0.0.1:3001 で待ち受けるので、
 # 任意のリバースプロキシ/トンネルで公開し PUBLIC_BASE_URL を一致させること。
 # 各サービスは .env の値を env_file で受け取る（DATABASE_URL 等は下で上書き）。
+#
+# 本番更新（GitHub ビルド済みイメージを利用・推奨）:
+#   docker compose pull && docker compose up -d
+# ローカルでビルドする場合:
+#   docker compose up -d --build
+#
+# IMAGE_TAG で取得タグを切替可能（既定 latest）。例: IMAGE_TAG=sha-xxxx
 services:
   # 起動前にマイグレーションを適用する一時ジョブ
   migrate:
+    image: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-migrate:${IMAGE_TAG:-latest}
     build:
       context: .
       target: migrate
@@ -14,6 +22,7 @@ services:
     restart: "no"
 
   web:
+    image: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-web:${IMAGE_TAG:-latest}
     build:
       context: .
       target: web
@@ -33,6 +42,7 @@ services:
       - ./data:/data
 
   bot:
+    image: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-bot:${IMAGE_TAG:-latest}
     build:
       context: .
       target: bot
