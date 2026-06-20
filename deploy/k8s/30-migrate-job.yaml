@@ -1,0 +1,26 @@
+# prisma migrate deploy を実行する Job。web/bot を更新する前に流す。
+# 再実行時は古い Job を消してから apply する:
+#   kubectl -n ikaskey-gatekeeper delete job gatekeeper-migrate --ignore-not-found
+#   kubectl apply -f deploy/k8s/30-migrate-job.yaml
+#   kubectl -n ikaskey-gatekeeper wait --for=condition=complete job/gatekeeper-migrate --timeout=120s
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gatekeeper-migrate
+  namespace: ikaskey-gatekeeper
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-migrate:latest
+          command: ["pnpm", "exec", "prisma", "migrate", "deploy"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gatekeeper-secret
+                  key: DATABASE_URL

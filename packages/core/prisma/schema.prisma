@@ -1,13 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   // 生成物を core パッケージ内に出力 → pnpm deploy で確実に同梱される（モノレポ対策）
-  output   = "../src/generated/prisma"
+  output        = "../src/generated/prisma"
   // native = ローカル(darwin-arm64等) / linux-arm64-openssl-3.0.x = Oracle ARM64 Docker(node:22-slim)
   binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -33,16 +33,16 @@ model Link {
 /// 認証フローの一時状態。ボタン押下(bot)とMiAuthコールバック(web)を結ぶ
 model VerificationState {
   /// 推測不能なnonce（URLに載るのはこれだけ）
-  nonce          String    @id
-  discordId      String
-  guildId        String
+  nonce              String    @id
+  discordId          String
+  guildId            String
   /// /start で採番する MiAuth セッションUUID
-  misskeySession String?
+  misskeySession     String?
   /// 自動参加(M6)フロー用の Discord OAuth2 アクセストークン（guilds.join に使用）
   discordAccessToken String?
-  createdAt      DateTime  @default(now())
-  expiresAt      DateTime
-  consumedAt     DateTime?
+  createdAt          DateTime  @default(now())
+  expiresAt          DateTime
+  consumedAt         DateTime?
 
   @@index([expiresAt])
 }
@@ -66,13 +66,13 @@ model Allowlist {
 /// 管理画面のログインセッション（MiAuth認証・モデレーター/管理者ゲート。M5）
 model AdminSession {
   /// Cookie に載るセッションID（推測不能）
-  id          String   @id
-  misskeyId   String
-  username    String
+  id        String   @id
+  misskeyId String
+  username  String
   /// roles/list 等の呼び出しに使う MiAuth トークン
-  token       String
-  createdAt   DateTime @default(now())
-  expiresAt   DateTime
+  token     String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 
   @@index([expiresAt])
 }
