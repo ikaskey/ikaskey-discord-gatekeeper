@@ -55,9 +55,39 @@ flowchart LR
 - **bot** (`@gatekeeper/bot`): discord.js v14 常駐。認証パネル設置・ボタン処理・state発行・新規参加検知。
 - **web** (`@gatekeeper/web`): Hono。MiAuthの開始/コールバック処理、Discordロール付与/剥奪/キックをREST(`@discordjs/rest`)で実行。
 - **core** (`@gatekeeper/core`): Misskey APIクライアント・Prisma・設定・認証フローのDB状態管理（共有）。
+- **admin-ui** (`@gatekeeper/admin-ui`): React + Tailwind の管理画面 SPA。ビルド成果物を `web` が `/admin` 配下から配信。
 
-> 運用: Docker で常駐。`web` をリバースプロキシ/トンネル等で公開し、`PUBLIC_BASE_URL` を一致させる。
-> 管理画面（`/admin`）は MiAuth でモデレーター/管理者をゲートする（必要なら前段の認証を併用）。
+> 管理画面（`/admin`）は MiAuth でモデレーター/管理者をゲートする。
+
+### デプロイ構成
+
+GitHub Actions が ARM64 で 3 イメージをビルドして ghcr へ push し、サーバーは pull のみ。`web`/`bot` は
+同じ SQLite（bind mount）を共有し、起動前に一時ジョブ `migrate` がマイグレーションを適用する。
+
+```mermaid
+flowchart LR
+    GHA["GitHub Actions（docker.yml）"] -->|push| GHCR["ghcr.io（web/bot/migrate）"]
+    GHCR -->|pull| HOST
+    subgraph HOST["サーバー（Docker Compose）"]
+        MIG["migrate（一時ジョブ）"] --> DB[("SQLite（bind mount）")]
+        WEB["web（Hono :3001）"] --> DB
+        BOT["bot（discord.js）"] --> DB
+    end
+    CF["cloudflared トンネル"] -->|PUBLIC_BASE_URL| WEB
+    WEB -->|REST| DISCORD([Discord API])
+    BOT -->|Gateway/REST| DISCORD
+    WEB -->|MiAuth / api| MISSKEY([Misskey])
+    BOT -->|定期検証| MISSKEY
+```
+
+### データモデル（Prisma / SQLite）
+
+- **Link**: 認証済み連携（`discordId`・`misskeyId` ともに unique ＝ 1対1）。トークン・`failureCount` 等を保持。
+- **VerificationState**: 認証フローの一時状態（nonce・MiAuthセッション・有効期限）。
+- **RoleMapping**: Misskeyロール → Discordロールの連動設定。
+- **Allowlist**: 退会連動キックの除外リスト。
+- **AdminSession**: 管理画面のセッション。
+- **AuditLog**: 認証・キック・連携解除・管理操作などの監査記録。
 
 ## 必要なもの
 

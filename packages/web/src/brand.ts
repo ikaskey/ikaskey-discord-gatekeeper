@@ -1,23 +1,7 @@
 import { loadConfig } from "@gatekeeper/core";
+import { escapeHtml as esc } from "./html.js";
 
 const config = loadConfig();
-
-function esc(s: string): string {
-  return s.replace(/[&<>"']/g, (ch) => {
-    switch (ch) {
-      case "&":
-        return "&amp;";
-      case "<":
-        return "&lt;";
-      case ">":
-        return "&gt;";
-      case '"':
-        return "&quot;";
-      default:
-        return "&#39;";
-    }
-  });
-}
 
 /**
  * 設定（`config.brand`）からブランディング用の `<head>` タグ群を生成する（M7）。

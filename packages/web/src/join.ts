@@ -2,12 +2,10 @@ import { Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import {
   attachMiauthSession,
-  computeRoleSync,
   consumeState,
   createVerificationState,
   generateNonce,
   getActiveState,
-  listActiveRoleMappings,
   loadConfig,
   MisskeyAlreadyLinkedError,
   MisskeyClient,
@@ -15,16 +13,9 @@ import {
   upsertLink,
   writeAudit,
 } from "@gatekeeper/core";
-import {
-  addGuildMember,
-  addGuildMemberRole,
-  exchangeDiscordCode,
-  getDiscordUser,
-  getGuildMemberRoleIds,
-  removeGuildMemberRole,
-} from "./discord.js";
+import { addGuildMember, exchangeDiscordCode, getDiscordUser } from "./discord.js";
 import { brandHeadTags } from "./brand.js";
-import { syncMisskeyModAdminRoles } from "./rolesync.js";
+import { syncMemberRoles } from "./rolesync.js";
 import { errorPage, successPage } from "./views.js";
 
 const config = loadConfig();
@@ -199,26 +190,8 @@ joinApp.get("/misskey/callback", async (c) => {
     );
   }
 
-  // 4) ロール連動（任意）
-  try {
-    const mappings = await listActiveRoleMappings();
-    if (mappings.length > 0) {
-      const misskeyRoleIds = new Set((user.roles ?? []).map((r) => r.id));
-      const current = new Set(await getGuildMemberRoleIds(st.guildId, st.discordId));
-      const plan = computeRoleSync(misskeyRoleIds, mappings, current);
-      for (const roleId of plan.toAdd) {
-        await addGuildMemberRole(st.guildId, st.discordId, roleId, "Misskeyロール連動");
-      }
-      for (const roleId of plan.toRemove) {
-        await removeGuildMemberRole(st.guildId, st.discordId, roleId, "Misskeyロール連動");
-      }
-    }
-  } catch (err) {
-    console.error("[join] role sync failed", err);
-  }
-
-  // Misskeyモデレーター/管理者 → Discordロール連動（M7）
-  await syncMisskeyModAdminRoles(st.guildId, st.discordId, token);
+  // 4) ロール連動（M4: Misskeyロール / M7: モデレーター・管理者）。失敗しても参加自体は成功扱い。
+  await syncMemberRoles(st.guildId, st.discordId, token);
 
   await consumeState(nonce);
   await writeAudit({
