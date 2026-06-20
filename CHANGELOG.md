@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+## [0.8.4] - 2026-06-20
+
+### Added
+
+- **トップページ（`/`）** を追加。これまで 404 だったルートに、サービス説明と未参加者向けの
+  参加導線（自動参加が有効な場合は「参加する」ボタン）を表示。ブランド（ファビコン/OGP）も反映。
+  `topPage()`。
+
 ## [0.8.3] - 2026-06-20
 
 ### Added
@@ -163,7 +171,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.3...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.4...HEAD
+[0.8.4]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.0...v0.8.1
