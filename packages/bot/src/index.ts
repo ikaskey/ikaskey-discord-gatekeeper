@@ -19,7 +19,7 @@
 import { Client, Events, GatewayIntentBits, MessageFlags } from "discord.js";
 import type { Interaction } from "discord.js";
 import { createVerificationState, loadConfig } from "@gatekeeper/core";
-import { handleMigrationStatus } from "./migration.js";
+import { handleMigrationPurge, handleMigrationStatus } from "./migration.js";
 import { sendVerifyPanel, VERIFY_BUTTON_ID } from "./panel.js";
 import { handleRoleMap } from "./rolemap.js";
 import { startSweepSchedule } from "./sweep.js";
@@ -83,6 +83,12 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     // /migration-status: 段階移行の進捗（認証済み/未認証）
     if (interaction.isChatInputCommand() && interaction.commandName === "migration-status") {
       await handleMigrationStatus(interaction);
+      return;
+    }
+
+    // /migration-purge: 未認証メンバーのキック（Phase 3・既定 dry-run）
+    if (interaction.isChatInputCommand() && interaction.commandName === "migration-purge") {
+      await handleMigrationPurge(interaction);
       return;
     }
 

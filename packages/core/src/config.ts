@@ -101,6 +101,18 @@ export interface AppConfig {
     /** セッション Cookie の署名鍵（環境変数 `ADMIN_COOKIE_SECRET`）。未設定なら管理画面は無効 */
     cookieSecret: string;
   };
+  /**
+   * 段階移行（Phase 3 の未認証キック）に関する設定。
+   *
+   * @since 0.6.0
+   */
+  migration: {
+    /**
+     * `/migration-purge` で**実際にキック**することを許可するか（環境変数 `MIGRATION_PURGE_ENABLED`、既定: `false`）。
+     * `false` の間は dry-run（プレビュー）しかできず、実キックは空振りする安全ゲート。
+     */
+    purgeEnabled: boolean;
+  };
 }
 
 let cached: AppConfig | undefined;
@@ -148,6 +160,9 @@ export function loadConfig(): AppConfig {
     },
     admin: {
       cookieSecret: optionalEnv("ADMIN_COOKIE_SECRET", ""),
+    },
+    migration: {
+      purgeEnabled: optionalEnv("MIGRATION_PURGE_ENABLED", "false") === "true",
     },
   };
   return cached;
