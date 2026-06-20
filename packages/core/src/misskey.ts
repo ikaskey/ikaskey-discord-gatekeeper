@@ -350,6 +350,31 @@ export class MisskeyClient {
   rolesList(token: string): Promise<MisskeyRole[]> {
     return this.call<MisskeyRole[]>("roles/list", {}, token);
   }
+
+  /**
+   * インスタンスの死活確認（`/api/meta` への到達性チェック）。
+   *
+   * @remarks
+   * 定期検証スイープの前段ガードに使う。`false`（インスタンス不達やエラー）の場合は
+   * スイープ全体をスキップし、API 一時障害による誤キックを防ぐ。ネットワーク例外も
+   * `false` に握りつぶす。
+   *
+   * @returns インスタンスが応答すれば `true`、不達・エラーなら `false`
+   *
+   * @since 0.2.0
+   */
+  async healthCheck(): Promise<boolean> {
+    try {
+      const res = await fetch(`${this.base}/api/meta`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
 }
 
 async function safeJson(res: Response): Promise<unknown> {

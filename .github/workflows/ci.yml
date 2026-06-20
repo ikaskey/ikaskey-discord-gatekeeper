@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      # prisma generate / core build 用の仮の値（DB接続はしない）
+      DATABASE_URL: "file:./dev.db"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # core の Prisma クライアント生成（型解決・ビルドに必要）
+      - run: pnpm --filter @gatekeeper/core prisma:generate
+
+      - name: Format check (oxfmt)
+        run: pnpm exec vp fmt --check
+
+      - name: Lint (oxlint)
+        run: pnpm exec vp lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Test
+        run: pnpm exec vp test
+
+      - name: Build
+        run: pnpm -r build
