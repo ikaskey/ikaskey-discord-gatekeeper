@@ -18,5 +18,6 @@ export * from "./config.js";
 export * from "./db.js";
 export * from "./ids.js";
 export * from "./misskey.js";
+export * from "./roles.js";
 export * from "./sweep.js";
 export * from "./verification.js";

@@ -18,16 +18,18 @@
  */
 import { Hono } from "hono";
 import {
-  MisskeyAlreadyLinkedError,
-  MisskeyClient,
   attachMiauthSession,
+  computeRoleSync,
   consumeState,
   getActiveState,
+  listActiveRoleMappings,
   loadConfig,
+  MisskeyAlreadyLinkedError,
+  MisskeyClient,
   newMiauthSession,
   upsertLink,
 } from "@gatekeeper/core";
-import { addGuildMemberRole } from "./discord.js";
+import { addGuildMemberRole, getGuildMemberRoleIds, removeGuildMemberRole } from "./discord.js";
 import { errorPage, successPage } from "./views.js";
 
 const config = loadConfig();
@@ -178,6 +180,24 @@ app.get("/auth/misskey/callback", async (c) => {
       ),
       500,
     );
+  }
+
+  // 4) Misskeyロール → Discordロール の即時連動（M4）。失敗しても認証自体は成功扱い。
+  try {
+    const mappings = await listActiveRoleMappings();
+    if (mappings.length > 0) {
+      const misskeyRoleIds = new Set((user.roles ?? []).map((r) => r.id));
+      const current = new Set(await getGuildMemberRoleIds(st.guildId, st.discordId));
+      const plan = computeRoleSync(misskeyRoleIds, mappings, current);
+      for (const roleId of plan.toAdd) {
+        await addGuildMemberRole(st.guildId, st.discordId, roleId, "Misskeyロール連動");
+      }
+      for (const roleId of plan.toRemove) {
+        await removeGuildMemberRole(st.guildId, st.discordId, roleId, "Misskeyロール連動");
+      }
+    }
+  } catch (err) {
+    console.error("[web] role sync failed", err);
   }
 
   await consumeState(nonce);

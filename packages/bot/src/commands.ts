@@ -17,6 +17,45 @@ export const verifyPanelCommand = new SlashCommandBuilder()
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild);
 
 /**
+ * `/rolemap` スラッシュコマンドの定義（Misskeyロール↔Discordロール連動の管理）。
+ *
+ * @remarks
+ * 管理画面（M5）が用意されるまでの暫定的な管理手段。`list` / `set` / `remove` の
+ * サブコマンドを持ち、既定でサーバー管理権限（Manage Guild）を持つメンバーのみが実行できる。
+ *
+ * @see {@link allCommands}
+ * @since 0.3.0
+ */
+export const roleMapCommand = new SlashCommandBuilder()
+  .setName("rolemap")
+  .setDescription("Misskeyロール→Discordロールの連動設定を管理します")
+  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+  .addSubcommand((sc) => sc.setName("list").setDescription("連動設定の一覧を表示"))
+  .addSubcommand((sc) =>
+    sc
+      .setName("set")
+      .setDescription("連動設定を追加/更新")
+      .addStringOption((o) =>
+        o.setName("misskey_role_id").setDescription("MisskeyロールID").setRequired(true),
+      )
+      .addStringOption((o) =>
+        o.setName("misskey_role_name").setDescription("Misskeyロール名").setRequired(true),
+      )
+      .addRoleOption((o) =>
+        o.setName("discord_role").setDescription("対応するDiscordロール").setRequired(true),
+      )
+      .addBooleanOption((o) => o.setName("enabled").setDescription("有効にするか（既定: true）")),
+  )
+  .addSubcommand((sc) =>
+    sc
+      .setName("remove")
+      .setDescription("連動設定を削除")
+      .addStringOption((o) =>
+        o.setName("misskey_role_id").setDescription("MisskeyロールID").setRequired(true),
+      ),
+  );
+
+/**
  * デプロイ対象となる全スラッシュコマンドの一覧。
  *
  * @remarks
@@ -24,6 +63,7 @@ export const verifyPanelCommand = new SlashCommandBuilder()
  * ギルドコマンドとして登録する。新しいコマンドを追加した際はこの配列に含める。
  *
  * @see {@link verifyPanelCommand}
+ * @see {@link roleMapCommand}
  * @since 0.1.0
  */
-export const allCommands = [verifyPanelCommand];
+export const allCommands = [verifyPanelCommand, roleMapCommand];
