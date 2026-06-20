@@ -60,7 +60,7 @@ export const roleMapCommand = new SlashCommandBuilder()
  *
  * @remarks
  * 認証済み/未認証の集計と未認証者リストを表示する読み取り専用コマンド。
- * 既定でサーバー管理権限（Manage Guild）を持つメンバーのみが実行できる。
+ * 既定で「メンバーをキック」権限（= モデレーター以上）を持つメンバーが実行できる。
  *
  * @see {@link allCommands}
  * @since 0.5.0
@@ -68,14 +68,14 @@ export const roleMapCommand = new SlashCommandBuilder()
 export const migrationStatusCommand = new SlashCommandBuilder()
   .setName("migration-status")
   .setDescription("認証済み/未認証メンバーの集計を表示します")
-  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild);
+  .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers);
 
 /**
  * `/migration-purge` スラッシュコマンドの定義（段階移行 Phase 3 の未認証キック）。
  *
  * @remarks
  * 既定で dry-run（プレビューのみ）。実キックは環境変数 `MIGRATION_PURGE_ENABLED=true` も必要。
- * 既定でサーバー管理権限（Manage Guild）を持つメンバーのみが実行できる。
+ * 既定で「メンバーをキック」権限（= モデレーター以上）を持つメンバーが実行できる。
  *
  * @see {@link allCommands}
  * @since 0.6.0
@@ -83,7 +83,7 @@ export const migrationStatusCommand = new SlashCommandBuilder()
 export const migrationPurgeCommand = new SlashCommandBuilder()
   .setName("migration-purge")
   .setDescription("未認証メンバーをキックします（既定はプレビュー表示）")
-  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+  .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
   .addBooleanOption((o) =>
     o.setName("dry_run").setDescription("プレビューのみ（既定: true）。false で実キック"),
   )
