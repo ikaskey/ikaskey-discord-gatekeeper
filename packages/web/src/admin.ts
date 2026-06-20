@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import { serveStatic } from "@hono/node-server/serve-static";
@@ -18,6 +19,7 @@ import {
   upsertRoleMapping,
   writeAudit,
 } from "@gatekeeper/core";
+import { brandHeadTags, injectBrand } from "./brand.js";
 
 const config = loadConfig();
 const misskey = new MisskeyClient(config.misskey.host);
@@ -56,6 +58,7 @@ function loginPage(message?: string): string {
   const note = message ? `<p style="color:#f85149">${message}</p>` : "";
   return `<!doctype html><html lang="ja"><head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" /><title>管理ログイン</title>
+${brandHeadTags("管理ログイン")}
 <style>body{font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:100dvh;margin:0;background:#0d1117;color:#e6edf3}
 .card{max-width:24rem;padding:2rem;border-radius:1rem;background:#161b22;border:1px solid #30363d;text-align:center}
 a.btn{display:inline-block;margin-top:1rem;padding:.6rem 1.2rem;border-radius:.6rem;background:#86b300;color:#0d1117;font-weight:700;text-decoration:none}</style>
@@ -227,4 +230,20 @@ adminApp.get("/api/audit", async (c) => c.json(await listAuditLogs(200)));
 // ビルド済み admin-ui を public/admin から配信（マウント時 c.req.path は /admin/... のままなので
 // root=./public で ./public/admin/... に解決される）。未ログインや直リンクは SPA 側で /api/me を見て制御。
 adminApp.use("/assets/*", serveStatic({ root: "./public" }));
-adminApp.get("*", serveStatic({ path: "./public/admin/index.html" }));
+
+// SPA の index.html はブランディングタグを注入して配信（差し替え可能なファビコン/OGP）
+let cachedSpaIndex: string | null = null;
+async function loadSpaIndex(): Promise<string | null> {
+  if (cachedSpaIndex !== null) return cachedSpaIndex;
+  try {
+    const html = await readFile("./public/admin/index.html", "utf8");
+    cachedSpaIndex = injectBrand(html);
+    return cachedSpaIndex;
+  } catch {
+    return null;
+  }
+}
+adminApp.get("*", async (c) => {
+  const html = await loadSpaIndex();
+  return html ? c.html(html) : c.text("管理画面のビルド成果物が見つかりません。", 404);
+});

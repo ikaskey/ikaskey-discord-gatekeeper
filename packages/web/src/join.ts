@@ -23,6 +23,8 @@ import {
   getGuildMemberRoleIds,
   removeGuildMemberRole,
 } from "./discord.js";
+import { brandHeadTags } from "./brand.js";
+import { syncMisskeyModAdminRoles } from "./rolesync.js";
 import { errorPage, successPage } from "./views.js";
 
 const config = loadConfig();
@@ -52,6 +54,7 @@ export const joinApp = new Hono();
 function landingPage(): string {
   return `<!doctype html><html lang="ja"><head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" /><title>サーバーに参加</title>
+${brandHeadTags("サーバーに参加")}
 <style>body{font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:100dvh;margin:0;background:#0d1117;color:#e6edf3}
 .card{max-width:26rem;padding:2rem;border-radius:1rem;background:#161b22;border:1px solid #30363d;text-align:center}
 a.btn{display:inline-block;margin-top:1rem;padding:.7rem 1.4rem;border-radius:.6rem;background:#86b300;color:#0d1117;font-weight:700;text-decoration:none}
@@ -213,6 +216,9 @@ joinApp.get("/misskey/callback", async (c) => {
   } catch (err) {
     console.error("[join] role sync failed", err);
   }
+
+  // Misskeyモデレーター/管理者 → Discordロール連動（M7）
+  await syncMisskeyModAdminRoles(st.guildId, st.discordId, token);
 
   await consumeState(nonce);
   await writeAudit({

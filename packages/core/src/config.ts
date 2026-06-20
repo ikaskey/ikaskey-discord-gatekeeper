@@ -71,6 +71,16 @@ export interface AppConfig {
     host: string;
     /** MiAuth に表示されるアプリ名（環境変数 `MISSKEY_APP_NAME`、既定: `会員認証`） */
     appName: string;
+    /**
+     * Misskey のモデレーターに連動して付与する Discord ロール ID（環境変数 `MISSKEY_MODERATOR_ROLE_ID`、任意）。
+     * @since 0.8.0
+     */
+    moderatorRoleId: string;
+    /**
+     * Misskey の管理者に連動して付与する Discord ロール ID（環境変数 `MISSKEY_ADMIN_ROLE_ID`、任意）。
+     * @since 0.8.0
+     */
+    adminRoleId: string;
   };
   /** Web サーバーに関する設定 */
   web: {
@@ -106,6 +116,23 @@ export interface AppConfig {
   admin: {
     /** セッション Cookie の署名鍵（環境変数 `ADMIN_COOKIE_SECRET`）。未設定なら管理画面は無効 */
     cookieSecret: string;
+  };
+  /**
+   * Web ページのブランディング（ファビコン・OGP 等）。すべて任意で、env で差し替え可能。
+   *
+   * @since 0.8.0
+   */
+  brand: {
+    /** ファビコン/アイコンの画像 URL（環境変数 `BRAND_FAVICON_URL`） */
+    faviconUrl: string;
+    /** OGP 画像の URL（環境変数 `BRAND_OG_IMAGE_URL`） */
+    ogImageUrl: string;
+    /** OGP/ページタイトル（環境変数 `BRAND_OG_TITLE`、既定はアプリ名） */
+    ogTitle: string;
+    /** OGP/説明文（環境変数 `BRAND_OG_DESCRIPTION`） */
+    ogDescription: string;
+    /** テーマカラー（環境変数 `BRAND_THEME_COLOR`、既定 `#86b300`） */
+    themeColor: string;
   };
   /**
    * 段階移行（Phase 3 の未認証キック）に関する設定。
@@ -154,6 +181,8 @@ export function loadConfig(): AppConfig {
     misskey: {
       host: requireEnv("MISSKEY_HOST"),
       appName: optionalEnv("MISSKEY_APP_NAME", "会員認証"),
+      moderatorRoleId: optionalEnv("MISSKEY_MODERATOR_ROLE_ID", ""),
+      adminRoleId: optionalEnv("MISSKEY_ADMIN_ROLE_ID", ""),
     },
     web: {
       publicBaseUrl: requireEnv("PUBLIC_BASE_URL").replace(/\/$/, ""),
@@ -167,6 +196,13 @@ export function loadConfig(): AppConfig {
     },
     admin: {
       cookieSecret: optionalEnv("ADMIN_COOKIE_SECRET", ""),
+    },
+    brand: {
+      faviconUrl: optionalEnv("BRAND_FAVICON_URL", ""),
+      ogImageUrl: optionalEnv("BRAND_OG_IMAGE_URL", ""),
+      ogTitle: optionalEnv("BRAND_OG_TITLE", optionalEnv("MISSKEY_APP_NAME", "会員認証")),
+      ogDescription: optionalEnv("BRAND_OG_DESCRIPTION", ""),
+      themeColor: optionalEnv("BRAND_THEME_COLOR", "#86b300"),
     },
     migration: {
       purgeEnabled: optionalEnv("MIGRATION_PURGE_ENABLED", "false") === "true",

@@ -19,6 +19,7 @@
 import { Client, Events, GatewayIntentBits, MessageFlags } from "discord.js";
 import type { Interaction } from "discord.js";
 import { createVerificationState, loadConfig } from "@gatekeeper/core";
+import { requireMisskeyLevel } from "./auth.js";
 import { handleMigrationPurge, handleMigrationStatus } from "./migration.js";
 import { sendVerifyPanel, VERIFY_BUTTON_ID } from "./panel.js";
 import { handleRoleMap } from "./rolemap.js";
@@ -56,8 +57,9 @@ client.once(Events.ClientReady, (c) => {
  */
 client.on(Events.InteractionCreate, async (interaction: Interaction) => {
   try {
-    // /verify-panel: 認証パネル設置
+    // /verify-panel: 認証パネル設置（管理者）
     if (interaction.isChatInputCommand() && interaction.commandName === "verify-panel") {
+      if (!(await requireMisskeyLevel(interaction, "administrator"))) return;
       const channel = interaction.channel;
       if (!channel || !channel.isSendable()) {
         await interaction.reply({
@@ -74,20 +76,23 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
       return;
     }
 
-    // /rolemap: Misskeyロール↔Discordロール連動の管理
+    // /rolemap: Misskeyロール↔Discordロール連動の管理（管理者）
     if (interaction.isChatInputCommand() && interaction.commandName === "rolemap") {
+      if (!(await requireMisskeyLevel(interaction, "administrator"))) return;
       await handleRoleMap(interaction);
       return;
     }
 
-    // /migration-status: 段階移行の進捗（認証済み/未認証）
+    // /migration-status: 移行の進捗（モデレーター以上）
     if (interaction.isChatInputCommand() && interaction.commandName === "migration-status") {
+      if (!(await requireMisskeyLevel(interaction, "moderator"))) return;
       await handleMigrationStatus(interaction);
       return;
     }
 
-    // /migration-purge: 未認証メンバーのキック（Phase 3・既定 dry-run）
+    // /migration-purge: 未認証メンバーのキック（モデレーター以上）
     if (interaction.isChatInputCommand() && interaction.commandName === "migration-purge") {
+      if (!(await requireMisskeyLevel(interaction, "moderator"))) return;
       await handleMigrationPurge(interaction);
       return;
     }
