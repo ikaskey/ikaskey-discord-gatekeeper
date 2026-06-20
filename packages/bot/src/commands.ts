@@ -67,7 +67,7 @@ export const roleMapCommand = new SlashCommandBuilder()
  */
 export const migrationStatusCommand = new SlashCommandBuilder()
   .setName("migration-status")
-  .setDescription("認証済み/未認証メンバーの集計（段階移行の進捗）を表示します")
+  .setDescription("認証済み/未認証メンバーの集計を表示します")
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild);
 
 /**
@@ -82,7 +82,7 @@ export const migrationStatusCommand = new SlashCommandBuilder()
  */
 export const migrationPurgeCommand = new SlashCommandBuilder()
   .setName("migration-purge")
-  .setDescription("未認証メンバーをキック（Phase 3）。既定は dry-run プレビュー")
+  .setDescription("未認証メンバーをキックします（既定はプレビュー表示）")
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
   .addBooleanOption((o) =>
     o.setName("dry_run").setDescription("プレビューのみ（既定: true）。false で実キック"),

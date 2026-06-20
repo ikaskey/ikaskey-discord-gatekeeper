@@ -1,5 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import type { SendableChannels } from "discord.js";
+import { loadConfig } from "@gatekeeper/core";
+
+const config = loadConfig();
 
 /**
  * 認証パネルのボタンに割り当てる `customId`。
@@ -40,7 +43,7 @@ export const VERIFY_BUTTON_ID = "verify:start";
 export async function sendVerifyPanel(channel: SendableChannels): Promise<void> {
   const embed = new EmbedBuilder()
     .setColor(0x86b300)
-    .setTitle("🦑 いかすきー会員認証")
+    .setTitle(`🦑 ${config.misskey.appName}`)
     .setDescription(
       [
         "このサーバーは **いかすきー（Misskey）のアカウント保持者専用** です。",

@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-06-20
+
+### Changed
+
+- 認証パネルのタイトルをハードコードから `MISSKEY_APP_NAME`（`config.misskey.appName`）参照に変更。
+- スラッシュコマンドの説明文から内部情報（「Phase 3」「段階移行の進捗」等）を除去し、
+  利用者向けの簡潔な文言に。
+
 ## [0.7.0] - 2026-06-20
 
 ### Added
@@ -106,7 +114,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.4.0...v0.5.0
