@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+## [0.8.3] - 2026-06-20
+
+### Added
+
+- 認証完了ページに **Discord サーバーへの誘導**（「サーバーを開く」ボタン＋数秒後の自動リダイレクト）を追加。
+  通常認証・自動参加の両方に適用。誘導先は `DISCORD_SERVER_URL`（既定は Guild ディープリンク
+  `https://discord.com/channels/{guildId}`）で差し替え可能。`config.discord.serverUrl`。
+
 ## [0.8.2] - 2026-06-20
 
 ### Added
@@ -155,7 +163,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.2...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.3...HEAD
+[0.8.3]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.2...v0.8.0

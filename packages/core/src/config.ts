@@ -64,6 +64,12 @@ export interface AppConfig {
      * @since 0.7.0
      */
     clientSecret: string;
+    /**
+     * 認証完了後に誘導する Discord サーバーの URL（環境変数 `DISCORD_SERVER_URL`）。
+     * 未設定時は Guild へのディープリンク `https://discord.com/channels/{guildId}` を使う。
+     * @since 0.8.3
+     */
+    serverUrl: string;
   };
   /** Misskey 連携に関する設定 */
   misskey: {
@@ -177,6 +183,10 @@ export function loadConfig(): AppConfig {
       guildId: requireEnv("DISCORD_GUILD_ID"),
       verifiedRoleId: requireEnv("VERIFIED_ROLE_ID"),
       clientSecret: optionalEnv("DISCORD_CLIENT_SECRET", ""),
+      serverUrl: optionalEnv(
+        "DISCORD_SERVER_URL",
+        `https://discord.com/channels/${requireEnv("DISCORD_GUILD_ID")}`,
+      ),
     },
     misskey: {
       host: requireEnv("MISSKEY_HOST"),
