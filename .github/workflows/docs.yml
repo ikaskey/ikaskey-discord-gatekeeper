@@ -39,8 +39,8 @@ jobs:
       # db.ts が参照する生成 Prisma クライアントを用意（型解決のため）
       - run: pnpm --filter @gatekeeper/core prisma:generate
 
-      # TypeDoc で docs-site/ を生成
-      - run: pnpm docs
+      # TypeDoc で docs-site/ を生成（bare `pnpm docs` は npm互換の組み込みdocsと衝突するため run を明示）
+      - run: pnpm run docs:build
 
       - uses: actions/upload-pages-artifact@v3
         with:
