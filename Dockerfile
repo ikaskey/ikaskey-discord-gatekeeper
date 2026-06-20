@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-# Oracle samurai-matrix(ARM64) 向け。node:26-slim は linux/arm64 multi-arch。
+# ARM64 / x86_64 両対応。node:26-slim は linux/arm64・linux/amd64 multi-arch。
 ARG NODE_VERSION=26
 
 # ---------- base ----------

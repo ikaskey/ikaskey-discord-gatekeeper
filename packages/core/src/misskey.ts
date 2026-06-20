@@ -1,5 +1,5 @@
 /**
- * いかすきー(Misskey) API クライアント。
+ * Misskey API クライアント。
  * 調査で確定した現行仕様に基づく:
  *  - MiAuth: /miauth/{uuid}?name&callback&permission=read:account → /api/miauth/{uuid}/check
  *  - 存在確認: POST /api/users/show（userId）。404 NO_SUCH_USER = 消滅 or 凍結
@@ -189,7 +189,7 @@ export interface BuildMiauthUrlOptions {
 }
 
 /**
- * いかすきー(Misskey) API クライアント。
+ * Misskey API クライアント。
  *
  * @remarks
  * 調査で確定した現行仕様に基づく:
@@ -202,7 +202,7 @@ export interface BuildMiauthUrlOptions {
  */
 export class MisskeyClient {
   /**
-   * @param host - 対象 Misskey インスタンスのホスト名（例: `ikaskey.bktsk.com`）
+   * @param host - 対象 Misskey インスタンスのホスト名（例: `misskey.example.com`）
    */
   constructor(private readonly host: string) {}
 
@@ -219,9 +219,9 @@ export class MisskeyClient {
    *
    * @example
    * ```ts
-   * const client = new MisskeyClient("ikaskey.bktsk.com");
+   * const client = new MisskeyClient("misskey.example.com");
    * const url = client.buildMiauthUrl(session, {
-   *   appName: "いかすきー会員認証",
+   *   appName: "会員認証",
    *   callback: "https://example.com/callback",
    * });
    * ```

@@ -59,11 +59,11 @@ export interface AppConfig {
     /** 認証完了時に付与するロールの ID（環境変数 `VERIFIED_ROLE_ID`） */
     verifiedRoleId: string;
   };
-  /** Misskey(いかすきー) 連携に関する設定 */
+  /** Misskey 連携に関する設定 */
   misskey: {
-    /** Misskey インスタンスのホスト名（環境変数 `MISSKEY_HOST`、既定: `ikaskey.bktsk.com`） */
+    /** Misskey インスタンスのホスト名（環境変数 `MISSKEY_HOST`、必須） */
     host: string;
-    /** MiAuth に表示されるアプリ名（環境変数 `MISSKEY_APP_NAME`、既定: `いかすきー会員認証`） */
+    /** MiAuth に表示されるアプリ名（環境変数 `MISSKEY_APP_NAME`、既定: `会員認証`） */
     appName: string;
   };
   /** Web サーバーに関する設定 */
@@ -145,8 +145,8 @@ export function loadConfig(): AppConfig {
       verifiedRoleId: requireEnv("VERIFIED_ROLE_ID"),
     },
     misskey: {
-      host: optionalEnv("MISSKEY_HOST", "ikaskey.bktsk.com"),
-      appName: optionalEnv("MISSKEY_APP_NAME", "いかすきー会員認証"),
+      host: requireEnv("MISSKEY_HOST"),
+      appName: optionalEnv("MISSKEY_APP_NAME", "会員認証"),
     },
     web: {
       publicBaseUrl: requireEnv("PUBLIC_BASE_URL").replace(/\/$/, ""),

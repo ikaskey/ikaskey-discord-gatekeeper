@@ -11,7 +11,7 @@
 ## Phase 0 — 並走デプロイ（誰も影響を受けない）
 
 1. `.env` を用意（Discord 認証情報 ＋ `ADMIN_COOKIE_SECRET`）。**念のため `SWEEP_ENABLED=false`** にしてキックを完全停止。
-2. `docker compose up -d --build`、cloudflared で `PUBLIC_BASE_URL` を web に向ける。
+2. `docker compose up -d --build`、リバースプロキシ/トンネルで `PUBLIC_BASE_URL` を web に向ける。
 3. `pnpm bot:deploy-commands`（`/verify-panel` `/rolemap` `/migration-status` を登録）。
 4. 認証チャンネルで `/verify-panel` を実行してパネル設置。
 5. この時点ではチャンネル権限は変更せず、全員これまで通り利用可能。
