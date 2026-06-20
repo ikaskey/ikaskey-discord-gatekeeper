@@ -86,6 +86,15 @@ export interface AppConfig {
     /** 同一スイープ内で「消滅」を再確認する待ち時間ms（環境変数 `SWEEP_RECHECK_DELAY_MS`、既定: `3000`） */
     recheckDelayMs: number;
   };
+  /**
+   * 管理画面（M5）に関する設定。
+   *
+   * @since 0.4.0
+   */
+  admin: {
+    /** セッション Cookie の署名鍵（環境変数 `ADMIN_COOKIE_SECRET`）。未設定なら管理画面は無効 */
+    cookieSecret: string;
+  };
 }
 
 let cached: AppConfig | undefined;
@@ -129,6 +138,9 @@ export function loadConfig(): AppConfig {
       cron: optionalEnv("SWEEP_CRON", "0 0,6,12,18 * * *"),
       failureThreshold: Number.parseInt(optionalEnv("SWEEP_FAILURE_THRESHOLD", "1"), 10),
       recheckDelayMs: Number.parseInt(optionalEnv("SWEEP_RECHECK_DELAY_MS", "3000"), 10),
+    },
+    admin: {
+      cookieSecret: optionalEnv("ADMIN_COOKIE_SECRET", ""),
     },
   };
   return cached;

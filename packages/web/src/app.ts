@@ -28,7 +28,9 @@ import {
   MisskeyClient,
   newMiauthSession,
   upsertLink,
+  writeAudit,
 } from "@gatekeeper/core";
+import { adminApp } from "./admin.js";
 import { addGuildMemberRole, getGuildMemberRoleIds, removeGuildMemberRole } from "./discord.js";
 import { errorPage, successPage } from "./views.js";
 
@@ -53,6 +55,9 @@ const app = new Hono();
  * 常に `{ ok: true }` を JSON で返す。死活監視・ロードバランサのプローブ用。
  */
 app.get("/healthz", (c) => c.json({ ok: true }));
+
+// 管理画面（M5）を /admin 配下にマウント
+app.route("/admin", adminApp);
 
 /**
  * GET `/auth/misskey/start` — 認証開始。
@@ -201,6 +206,11 @@ app.get("/auth/misskey/callback", async (c) => {
   }
 
   await consumeState(nonce);
+  await writeAudit({
+    type: "auth",
+    summary: `認証完了: @${user.username}`,
+    targetDiscordId: st.discordId,
+  }).catch(() => {});
   return c.html(successPage(user.username));
 });
 

@@ -22,7 +22,16 @@ export const prisma = new PrismaClient();
  * - `VerificationState`: 認証フロー中の一時的な state（nonce / MiAuth セッション等）。
  * - `RoleMapping`: Misskey ロールから Discord ロールへのマッピング。
  * - `Allowlist`: 許可リストのエントリ。
+ * - `AdminSession`: 管理画面のログインセッション（M5）。
+ * - `AuditLog`: 監査ログ（M5）。
  *
  * @since 0.1.0
  */
-export type { Link, VerificationState, RoleMapping, Allowlist } from "./generated/prisma/index.js";
+export type {
+  AdminSession,
+  Allowlist,
+  AuditLog,
+  Link,
+  RoleMapping,
+  VerificationState,
+} from "./generated/prisma/index.js";

@@ -7,6 +7,7 @@ import {
   markKicked,
   MisskeyClient,
   runSweep,
+  writeAudit,
 } from "@gatekeeper/core";
 
 const config = loadConfig();
@@ -64,6 +65,11 @@ export async function performSweep(client: Client): Promise<void> {
 
       await member.kick(target.reason);
       await markKicked(target.discordId);
+      await writeAudit({
+        type: "kick",
+        summary: `キック: @${target.username} — ${target.reason}`,
+        targetDiscordId: target.discordId,
+      }).catch(() => {});
       console.log(`[sweep] kicked: ${target.username} (${target.discordId}) — ${target.reason}`);
     } catch (err) {
       // 失敗時は markKicked を呼ばない → status active のまま次回再試行

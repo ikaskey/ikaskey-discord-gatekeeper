@@ -6,6 +6,7 @@
     "build": "pnpm -r build",
     "dev:web": "pnpm --filter @gatekeeper/web dev",
     "dev:bot": "pnpm --filter @gatekeeper/bot dev",
+    "dev:admin": "pnpm --filter @gatekeeper/admin-ui dev",
     "bot:deploy-commands": "pnpm --filter @gatekeeper/bot deploy-commands",
     "test": "vp test",
     "test:watch": "vp test --watch",
