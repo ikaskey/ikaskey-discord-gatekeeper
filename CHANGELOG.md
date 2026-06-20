@@ -7,6 +7,21 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-06-20
+
+### Added
+
+- **M6: 未参加ユーザーの自動参加** — Discord 未参加の Misskey ユーザーが認証ページから
+  そのままサーバーへ参加できるフロー（`/join`）。
+  - Discord OAuth2(`identify` + `guilds.join`) → MiAuth → `guilds.join` でサーバー追加＋会員ロール付与
+    （連動ロールも反映）。`auto_join` を監査ログに記録。
+  - `@gatekeeper/web`: `/join` サブアプリ、`exchangeDiscordCode` / `getDiscordUser` /
+    `addGuildMember`（`@since 0.7.0`）。
+  - `@gatekeeper/core`: `AppConfig.discord.clientSecret`（`DISCORD_CLIENT_SECRET`）、
+    `VerificationState.discordAccessToken`、`createVerificationState` 拡張。
+  - 有効化には `DISCORD_CLIENT_SECRET` ＋ `ADMIN_COOKIE_SECRET`、Bot の **Create Instant Invite** 権限、
+    Developer Portal の Redirect URI 登録（`<PUBLIC_BASE_URL>/join/discord/callback`）が必要。
+
 ## [0.6.0] - 2026-06-20
 
 ### Added
@@ -91,7 +106,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.3.0...v0.4.0

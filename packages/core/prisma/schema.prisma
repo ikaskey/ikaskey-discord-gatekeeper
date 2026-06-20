@@ -38,6 +38,8 @@ model VerificationState {
   guildId        String
   /// /start で採番する MiAuth セッションUUID
   misskeySession String?
+  /// 自動参加(M6)フロー用の Discord OAuth2 アクセストークン（guilds.join に使用）
+  discordAccessToken String?
   createdAt      DateTime  @default(now())
   expiresAt      DateTime
   consumedAt     DateTime?
