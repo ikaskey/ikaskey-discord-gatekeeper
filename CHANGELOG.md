@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-06-20
+
+### Added
+
+- **M8: 管理画面に「連携管理」タブ**を追加。認証済みユーザーの連携一覧（トークンは非表示）と
+  検索、**連携解除(unlink)** を提供。解除後は当人が別の Misskey アカウントで認証し直せる。
+  core: `listLinks` / `deleteLinkByDiscordId`、web: `GET/DELETE /admin/api/links`、監査ログ `link_unlink`。
+
 ## [0.8.1] - 2026-06-20
 
 ### Fixed
@@ -147,7 +155,8 @@
 - lint/fmt/test を **Vite+(oxc)** に集約（`vp lint` / `vp fmt` / `vp test`）。
 - pnpm workspaces モノレポ、全 ESM。
 
-[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.2...HEAD
+[0.8.2]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/ikaskey/ikaskey-discord-gatekeeper/compare/v0.7.1...v0.7.2

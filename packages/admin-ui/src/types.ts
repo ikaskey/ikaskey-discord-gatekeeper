@@ -64,3 +64,18 @@ export interface AuditLog {
   targetDiscordId: string;
   summary: string;
 }
+
+/**
+ * 認証済み連携（`GET /admin/api/links`）。トークンは含まない。
+ *
+ * @since 0.8.2
+ */
+export interface LinkRow {
+  discordId: string;
+  misskeyId: string;
+  username: string;
+  misskeyHost: string | null;
+  status: string;
+  linkedAt: string;
+  lastCheckedAt: string;
+}

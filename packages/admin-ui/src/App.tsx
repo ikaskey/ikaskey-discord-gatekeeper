@@ -3,15 +3,17 @@ import { useEffect, useState } from "react";
 import { ApiError, api } from "./api.js";
 import { AllowlistTab } from "./components/AllowlistTab.js";
 import { AuditLogTab } from "./components/AuditLogTab.js";
+import { LinksTab } from "./components/LinksTab.js";
 import { RoleMappingsTab } from "./components/RoleMappingsTab.js";
 import { Button, ErrorBanner, Loading } from "./components/ui.js";
 import type { Me } from "./types.js";
 
 /** タブ識別子。 */
-type TabKey = "mappings" | "allowlist" | "audit";
+type TabKey = "mappings" | "links" | "allowlist" | "audit";
 
 const TABS: ReadonlyArray<{ key: TabKey; label: string }> = [
   { key: "mappings", label: "ロール連動" },
+  { key: "links", label: "連携管理" },
   { key: "allowlist", label: "除外リスト" },
   { key: "audit", label: "監査ログ" },
 ];
@@ -98,6 +100,7 @@ export function App(): ReactNode {
       </nav>
 
       {tab === "mappings" && <RoleMappingsTab />}
+      {tab === "links" && <LinksTab />}
       {tab === "allowlist" && <AllowlistTab />}
       {tab === "audit" && <AuditLogTab />}
     </Shell>

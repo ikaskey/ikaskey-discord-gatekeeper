@@ -1,4 +1,4 @@
-import type { Allowlist, AuditLog, Me, MisskeyRole, RoleMapping } from "./types.js";
+import type { Allowlist, AuditLog, LinkRow, Me, MisskeyRole, RoleMapping } from "./types.js";
 
 /**
  * API 呼び出しで HTTP エラーが発生したことを表す。
@@ -161,5 +161,23 @@ export const api = {
    */
   getAudit(): Promise<AuditLog[]> {
     return request<AuditLog[]>("/admin/api/audit");
+  },
+
+  /**
+   * 認証済み連携の一覧を取得する。
+   * @since 0.8.2
+   */
+  getLinks(): Promise<LinkRow[]> {
+    return request<LinkRow[]>("/admin/api/links");
+  },
+
+  /**
+   * 連携を解除（削除）する。当人は別アカウントで認証し直せる。
+   * @since 0.8.2
+   */
+  deleteLink(discordId: string): Promise<{ ok: boolean; removed: number }> {
+    return request(`/admin/api/links/${encodeURIComponent(discordId)}`, {
+      method: "DELETE",
+    });
   },
 };
