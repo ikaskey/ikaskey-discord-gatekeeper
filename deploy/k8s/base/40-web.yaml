@@ -1,9 +1,14 @@
 # web（Hono）。ステートレスなので複数 replica に水平スケール可能。
+# keel.sh アノテーション: latest の digest 変化を 2分毎に poll して自動ロールアウト（force）。
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: web
   namespace: ikaskey-gatekeeper
+  annotations:
+    keel.sh/policy: force
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 2m"
 spec:
   replicas: 2
   selector:
@@ -14,9 +19,20 @@ spec:
       labels:
         app: web
     spec:
+      # 起動前にスキーマ移行を適用（ロールアウト毎に自動マイグレーション）。
+      # prisma migrate deploy は advisory lock で直列化されるため web/bot 同時でも安全。
+      initContainers:
+        - name: migrate
+          image: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-migrate:latest
+          imagePullPolicy: Always
+          command: ["pnpm", "exec", "prisma", "migrate", "deploy"]
+          envFrom:
+            - secretRef:
+                name: gatekeeper-secret
       containers:
         - name: web
           image: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-web:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 3001
           envFrom:
