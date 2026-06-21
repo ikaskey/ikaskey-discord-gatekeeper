@@ -1,7 +1,11 @@
-# ステージング overlay：
-# - bot を 0 replica（ダミー認証情報なので Gateway 二重接続を避ける）
-# - 全コンポーネントを matrix（label gatekeeper-node=true）に固定
-#   （イメージは arm64 専用ビルドのため、amd64 の sakura では動かない）
+# ステージング overlay（matrix 固定・vxlan 不能環境向け）：
+# - 全コンポーネントを matrix（label gatekeeper-node=true）に固定し、同一ノード内で完結させる
+#   （この環境は Cloudflare WARP mesh ＋ VCN ＋ WireGuard が重なり、flannel vxlan の
+#    クロスノード通信が成立しないため、クロスノード依存を作らない）
+# - 外部DNS は dnsConfig で 1.1.1.1/8.8.8.8 直（CoreDNS 非依存・node-local egress）
+# - postgres は固定 ClusterIP(10.43.0.222) を hostAliases で "postgres" にマップ
+#   （同一ノード kube-proxy DNAT で到達。vxlan 不要）
+# - bot は 0 replica（ダミー認証情報なので Gateway 二重接続を避ける）
 # - web は常時 1 pod ＋ ローリング無停止（maxUnavailable:0 / maxSurge:1）
 #
 #   kubectl apply -f deploy/k8s/secret.yaml
@@ -31,6 +35,18 @@ patches:
         path: /spec/template/spec/nodeSelector
         value:
           gatekeeper-node: "true"
+      - op: add
+        path: /spec/template/spec/dnsPolicy
+        value: None
+      - op: add
+        path: /spec/template/spec/dnsConfig
+        value:
+          nameservers: ["1.1.1.1", "8.8.8.8"]
+      - op: add
+        path: /spec/template/spec/hostAliases
+        value:
+          - ip: "10.43.0.222"
+            hostnames: ["postgres"]
   - target:
       kind: Deployment
       name: bot
@@ -42,6 +58,18 @@ patches:
         path: /spec/template/spec/nodeSelector
         value:
           gatekeeper-node: "true"
+      - op: add
+        path: /spec/template/spec/dnsPolicy
+        value: None
+      - op: add
+        path: /spec/template/spec/dnsConfig
+        value:
+          nameservers: ["1.1.1.1", "8.8.8.8"]
+      - op: add
+        path: /spec/template/spec/hostAliases
+        value:
+          - ip: "10.43.0.222"
+            hostnames: ["postgres"]
   - target:
       kind: StatefulSet
       name: postgres
@@ -58,3 +86,15 @@ patches:
         path: /spec/template/spec/nodeSelector
         value:
           gatekeeper-node: "true"
+      - op: add
+        path: /spec/template/spec/dnsConfig
+        value:
+          nameservers: ["1.1.1.1", "8.8.8.8"]
+      - op: add
+        path: /spec/template/spec/dnsPolicy
+        value: None
+      - op: add
+        path: /spec/template/spec/hostAliases
+        value:
+          - ip: "10.43.0.222"
+            hostnames: ["postgres"]

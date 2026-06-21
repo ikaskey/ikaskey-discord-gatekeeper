@@ -6,6 +6,8 @@ metadata:
   name: postgres
   namespace: ikaskey-gatekeeper
 spec:
+  # 固定 ClusterIP（vxlan 不能な環境で hostAliases から参照するため）
+  clusterIP: 10.43.0.222
   selector:
     app: postgres
   ports:
