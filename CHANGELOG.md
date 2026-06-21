@@ -7,6 +7,15 @@
 
 ## [Unreleased]
 
+### Added
+
+- **継続的デプロイ（Keel）**。`deploy/k8s/keel/` に軽量コントローラ Keel を導入し、`latest` イメージの
+  digest 変化を poll（@every 2m）して web/bot を自動ロールアウト（`keel.sh/policy: force`）。
+- **migrate を initContainer 化**（web/bot）。ロールアウト毎に `prisma migrate deploy` を自動実行し、
+  スキーマ変更を含む更新でも安全に反映する（Prisma の advisory lock で web/bot 同時起動でも直列化）。
+- Keel の書き込み権限は `ikaskey-gatekeeper` 名前空間のみに限定（読み取りはクラスタ全体・書き込みは限定）。
+  共有クラスタ上の他ワークロード（Misskey 等）は Keel から変更不可。
+
 ## [0.10.0] - 2026-06-21
 
 ### Changed

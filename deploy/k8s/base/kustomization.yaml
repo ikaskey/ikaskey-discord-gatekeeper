@@ -2,8 +2,10 @@
 #   kubectl apply -f deploy/k8s/secret.yaml    # 先にシークレット（gitignore）
 #   kubectl apply -k deploy/k8s/               # 残りを一括適用
 #
-# images.newTag でイメージタグを1か所で切り替える（既定はブランチビルドの sha タグ）。
-# 本番カットオーバー時は latest（main の Postgres 版）等に変更する。
+# images.newTag は keel が追跡する `latest` に固定。
+# main への push 毎に latest が更新され、keel(force/poll) が digest 変化を検知して自動ロールアウトする。
+# ※ keel は稼働中の Deployment を直接更新する（live が真実の源）。kustomize を再 apply すると
+#   一旦 latest タグに戻り keel が再解決するだけなので問題ない。
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -16,8 +18,8 @@ resources:
 
 images:
   - name: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-web
-    newTag: sha-2a7a489
+    newTag: latest
   - name: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-bot
-    newTag: sha-2a7a489
+    newTag: latest
   - name: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-migrate
-    newTag: sha-2a7a489
+    newTag: latest

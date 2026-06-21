@@ -1,0 +1,125 @@
+# Keel: ghcr の latest digest を poll して、keel.sh アノテーション付き Deployment を
+# 自動ロールアウトする軽量コントローラ。
+#
+# 共有クラスタ（本番 Misskey 同居）のため最小権限:
+#   - 読み取り（discover）はクラスタ全体（ClusterRole）だが、
+#   - 書き込み（Deployment 更新）は ikaskey-gatekeeper 名前空間のみ（Role）。
+#   → Misskey 等の他ワークロードは Keel から一切変更できない。
+# さらに keel.sh アノテーションの無い Deployment は対象外なので二重に安全。
+#
+# 導入:  kubectl apply -f deploy/k8s/keel/keel.yaml
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keel
+  namespace: ikaskey-gatekeeper
+---
+# 読み取り専用・クラスタ全体（Keel の discover 用。書き込み権限は無い）
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: keel-discover
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["cronjobs", "jobs"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods", "namespaces"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: keel-discover
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: keel-discover
+subjects:
+  - kind: ServiceAccount
+    name: keel
+    namespace: ikaskey-gatekeeper
+---
+# 書き込みは ikaskey-gatekeeper のみ（Deployment 更新＝ロールアウト）
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keel-manage
+  namespace: ikaskey-gatekeeper
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keel-manage
+  namespace: ikaskey-gatekeeper
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keel-manage
+subjects:
+  - kind: ServiceAccount
+    name: keel
+    namespace: ikaskey-gatekeeper
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keel
+  namespace: ikaskey-gatekeeper
+  labels:
+    app: keel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keel
+  template:
+    metadata:
+      labels:
+        app: keel
+    spec:
+      serviceAccountName: keel
+      # keelhq/keel は amd64 のみ提供のため、唯一の amd64 ノード sakura に固定。
+      # （sakura は通常のクラスタ網で CoreDNS/apiserver/ghcr に到達できる。matrix は vxlan 不能なので置かない）
+      nodeName: sakura
+      containers:
+        - name: keel
+          image: keelhq/keel:latest
+          imagePullPolicy: Always
+          command: ["/bin/keel"]
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POLL
+              value: "true"
+            # 共有クラスタ保護: Helm/その他プロバイダは無効、k8s のみ
+            - name: HELM_PROVIDER
+              value: "0"
+          ports:
+            - containerPort: 9300
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9300
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi

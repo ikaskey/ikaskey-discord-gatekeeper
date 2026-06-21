@@ -6,6 +6,10 @@ kind: Deployment
 metadata:
   name: bot
   namespace: ikaskey-gatekeeper
+  annotations:
+    keel.sh/policy: force
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 2m"
 spec:
   replicas: 1
   strategy:
@@ -18,9 +22,19 @@ spec:
       labels:
         app: bot
     spec:
+      # 起動前にスキーマ移行を適用（web と同時でも advisory lock で直列化され安全）。
+      initContainers:
+        - name: migrate
+          image: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-migrate:latest
+          imagePullPolicy: Always
+          command: ["pnpm", "exec", "prisma", "migrate", "deploy"]
+          envFrom:
+            - secretRef:
+                name: gatekeeper-secret
       containers:
         - name: bot
           image: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-bot:latest
+          imagePullPolicy: Always
           envFrom:
             - secretRef:
                 name: gatekeeper-secret
