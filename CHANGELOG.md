@@ -7,6 +7,21 @@
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-06-21
+
+### Changed
+
+- **データベースを SQLite から PostgreSQL に移行**。Prisma の `provider` を `postgresql` に変更し、
+  マイグレーションを再生成。`docker compose` は `postgres` サービスを同梱する構成にした。
+
+### Added
+
+- **k3s デプロイ構成**（`deploy/k8s/`、kustomize base/overlays）。本番 Misskey が稼働する k3s
+  クラスタに matrix ノードを追加し、Gatekeeper を載せた。Cloudflare WARP mesh ＋ VCN ＋ WireGuard が
+  重なり flannel vxlan のクロスノード通信が成立しない環境向けに、**同一ノード完結**（postgres を固定
+  ClusterIP ＋ hostAliases で参照）・**外部 DNS は dnsConfig(1.1.1.1)**・**公開は socat**
+  （cloudflared → web 固定 ClusterIP）で構成。本番を Docker/SQLite から k3s/PostgreSQL へカットオーバーした。
+
 ## [0.9.2] - 2026-06-21
 
 ### Changed

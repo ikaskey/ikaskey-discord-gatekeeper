@@ -1,0 +1,73 @@
+# PostgreSQL を StatefulSet で運用（永続ボリューム＋安定したネットワークID）。
+# k3s 既定の local-path provisioner を使う（単一ノードに固定される）。
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: ikaskey-gatekeeper
+spec:
+  # 固定 ClusterIP（vxlan 不能な環境で hostAliases から参照するため）
+  clusterIP: 10.43.0.222
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: ikaskey-gatekeeper
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: gatekeeper-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gatekeeper-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: gatekeeper-secret
+                  key: POSTGRES_DB
+            # local-path の data ディレクトリ直下に lost+found 等があると初期化に失敗するため subdir を使う
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 2Gi

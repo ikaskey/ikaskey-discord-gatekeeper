@@ -23,3 +23,6 @@ docs-site/
 
 # admin-ui のビルド成果物（web が配信。生成物）
 packages/web/public/
+
+# k8s 実シークレット
+deploy/k8s/secret.yaml

@@ -1,0 +1,29 @@
+# bot（discord.js 常駐）。Discord Gateway は単一インスタンス前提のため replicas は必ず 1。
+# strategy: Recreate でローリング中に bot が二重起動しないようにする
+# （二重起動するとイベント二重処理・スイープ二重実行になる）。
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bot
+  namespace: ikaskey-gatekeeper
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: bot
+  template:
+    metadata:
+      labels:
+        app: bot
+    spec:
+      containers:
+        - name: bot
+          image: ghcr.io/ikaskey/ikaskey-discord-gatekeeper-bot:latest
+          envFrom:
+            - secretRef:
+                name: gatekeeper-secret
+          env:
+            - name: NODE_ENV
+              value: production
