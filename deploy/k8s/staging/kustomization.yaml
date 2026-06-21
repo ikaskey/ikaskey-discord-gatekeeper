@@ -1,12 +1,15 @@
-# ステージング overlay（matrix 固定・vxlan 不能環境向け）：
+# 本番 overlay（matrix 固定・vxlan 不能環境向け）：
 # - 全コンポーネントを matrix（label gatekeeper-node=true）に固定し、同一ノード内で完結させる
 #   （この環境は Cloudflare WARP mesh ＋ VCN ＋ WireGuard が重なり、flannel vxlan の
 #    クロスノード通信が成立しないため、クロスノード依存を作らない）
 # - 外部DNS は dnsConfig で 1.1.1.1/8.8.8.8 直（CoreDNS 非依存・node-local egress）
 # - postgres は固定 ClusterIP(10.43.0.222) を hostAliases で "postgres" にマップ
 #   （同一ノード kube-proxy DNAT で到達。vxlan 不要）
-# - bot は 0 replica（ダミー認証情報なので Gateway 二重接続を避ける）
+# - bot は 1 replica（Docker版を停止してから有効化。Gateway 二重接続に注意）
 # - web は常時 1 pod ＋ ローリング無停止（maxUnavailable:0 / maxSurge:1）
+# - 公開は matrix ホスト上の socat 経由（cloudflared→127.0.0.1:3001→web ClusterIP 10.43.0.223）:
+#     docker run -d --restart unless-stopped --name gk-ingress --network host alpine/socat \
+#       TCP-LISTEN:3001,fork,reuseaddr,bind=127.0.0.1 TCP:10.43.0.223:3001
 #
 #   kubectl apply -f deploy/k8s/secret.yaml
 #   kubectl apply -k deploy/k8s/staging/
@@ -53,7 +56,7 @@ patches:
     patch: |
       - op: replace
         path: /spec/replicas
-        value: 0
+        value: 1
       - op: add
         path: /spec/template/spec/nodeSelector
         value:

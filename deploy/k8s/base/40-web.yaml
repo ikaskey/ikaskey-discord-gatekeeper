@@ -46,6 +46,9 @@ metadata:
   name: web
   namespace: ikaskey-gatekeeper
 spec:
+  # 固定 ClusterIP。matrix ホスト上の socat（127.0.0.1:3001→ここ）経由で
+  # cloudflared トンネルから公開する（vxlan 不能環境のため Ingress/NodePort は使わない）。
+  clusterIP: 10.43.0.223
   selector:
     app: web
   ports:
