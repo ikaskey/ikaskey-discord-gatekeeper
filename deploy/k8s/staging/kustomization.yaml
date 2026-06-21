@@ -1,9 +1,11 @@
-# ステージング overlay：bot を 0 replica にして Gateway 二重接続を避ける。
-# web は @discordjs/rest（REST のみ・Gateway を張らない）ので、本番と同じ DISCORD_TOKEN でも
-# 本番 bot と衝突しない。これで Postgres 対応・migrate・web の水平スケールを安全に検証できる。
+# ステージング overlay：
+# - bot を 0 replica（ダミー認証情報なので Gateway 二重接続を避ける）
+# - 全コンポーネントを matrix（label gatekeeper-node=true）に固定
+#   （イメージは arm64 専用ビルドのため、amd64 の sakura では動かない）
+# - web は常時 1 pod ＋ ローリング無停止（maxUnavailable:0 / maxSurge:1）
 #
-#   kubectl apply -f deploy/k8s/secret.yaml      # 先にシークレット
-#   kubectl apply -k deploy/k8s/staging/         # postgres + migrate + web（bot は 0）
+#   kubectl apply -f deploy/k8s/secret.yaml
+#   kubectl apply -k deploy/k8s/staging/
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -13,8 +15,46 @@ resources:
 patches:
   - target:
       kind: Deployment
+      name: web
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: add
+        path: /spec/strategy
+        value:
+          type: RollingUpdate
+          rollingUpdate:
+            maxUnavailable: 0
+            maxSurge: 1
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          gatekeeper-node: "true"
+  - target:
+      kind: Deployment
       name: bot
     patch: |
       - op: replace
         path: /spec/replicas
         value: 0
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          gatekeeper-node: "true"
+  - target:
+      kind: StatefulSet
+      name: postgres
+    patch: |
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          gatekeeper-node: "true"
+  - target:
+      kind: Job
+      name: gatekeeper-migrate
+    patch: |
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          gatekeeper-node: "true"
