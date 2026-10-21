@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 # ARM64 / x86_64 両対応。node:26-slim は linux/arm64・linux/amd64 multi-arch。
-ARG NODE_VERSION=26
+ARG NODE_VERSION=26.12.1
 
 # ---------- base ----------
 FROM node:${NODE_VERSION}-slim AS base
