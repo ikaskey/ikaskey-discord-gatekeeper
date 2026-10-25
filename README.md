@@ -107,8 +107,8 @@ flowchart LR
 
 ## 前提
 
-- **Node.js 24+**（本番ランタイムは **Node 26** / `node:26-slim`）、**pnpm 10**
-- Node 25+ は corepack を同梱しないため、ローカルは `npm i -g pnpm@10` 等で導入
+- **Node.js 24+**（本番ランタイムは **Node 26** / `node:26-slim`）、**pnpm 12**
+- Node 25+ は corepack を同梱しないため、ローカルは `npm i -g pnpm@12` 等で導入
 
 ## セットアップ（ローカル開発）
 
