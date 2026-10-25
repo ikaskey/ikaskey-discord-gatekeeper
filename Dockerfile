@@ -6,7 +6,7 @@ ARG NODE_VERSION=26.12.1
 FROM node:${NODE_VERSION}-slim AS base
 # Node 25+ は corepack を同梱しないため npm で pnpm を導入（packageManager と版を揃える）。
 # store-dir をキャッシュマウント先に固定して install を高速化。
-RUN npm install -g pnpm@10.33.0 && pnpm config set store-dir /pnpm/store
+RUN npm install -g pnpm@12.15.0 && pnpm config set store-dir /pnpm/store
 WORKDIR /app
 
 # ---------- build（全体をビルドし、bot/web を prod deploy で切り出す）----------
