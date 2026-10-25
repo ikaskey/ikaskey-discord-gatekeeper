@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { computeModAdminRoleSync, computeRoleSync } from "./roles.js";
 import type { RoleMapping } from "./db.js";
 
