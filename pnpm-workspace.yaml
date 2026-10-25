@@ -16,3 +16,20 @@ allowBuilds:
   "@prisma/engines": true
   prisma: true
   esbuild: true
+
+# 脆弱性対応のための間接依存の上げ（pnpm audit, 2026-10）
+overrides:
+  # vite-plus>oxfmt が tinypool 2.1.0 を固定している（GHSA-5gmw-xhrv-c9v3 / GHSA-85c8-ppgw-ccpr、critical）
+  tinypool@^2: ^2.1.2
+  # vite-plus 0.2.x が vitest と @vitest/* を 4.1.9 に固定している。vite-plus 自体の修正版は 1.1.0（メジャー）なので、
+  # vitest 側だけ同じメジャーの直った版にそろえる（@vitest/browser GHSA-p63j-vcc4-9vmv critical、vitest / @vitest/mocker moderate）
+  vitest@^4: 4.1.12
+  "@vitest/browser@^4": 4.1.12
+  "@vitest/browser-preview@^4": 4.1.12
+  "@vitest/expect@^4": 4.1.12
+  "@vitest/mocker@^4": 4.1.12
+  "@vitest/pretty-format@^4": 4.1.12
+  "@vitest/runner@^4": 4.1.12
+  "@vitest/snapshot@^4": 4.1.12
+  "@vitest/spy@^4": 4.1.12
+  "@vitest/utils@^4": 4.1.12
