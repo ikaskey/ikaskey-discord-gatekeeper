@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { isPurgeCandidate } from "./purge.js";
 
 const DAY = 24 * 60 * 60 * 1000;

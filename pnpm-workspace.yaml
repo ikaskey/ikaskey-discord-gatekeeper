@@ -8,7 +8,8 @@ injectWorkspacePackages: true
 catalog:
   # TS7(ネイティブ版)への橋渡しメジャー。TS7 RCはtsup等がtypescriptのJS API(exports)非対応で不可→GA前後で移行
   typescript: ^6.0.0
-  # テストは Vite+(vp test=内蔵vitest4)へ集約したため、standalone vitest は廃止
+  # lint / fmt / test は Vite+ に集約（vp test は内蔵の vitest 5 を使う。standalone vitest は入れない）
+  vite-plus: 1.4.0
 
 # postinstall ビルドを許可する依存（pnpm 12 は許可のない postinstall があると install を止める）
 allowBuilds:
@@ -17,19 +18,9 @@ allowBuilds:
   prisma: true
   esbuild: true
 
-# 脆弱性対応のための間接依存の上げ（pnpm audit, 2026-10）
-overrides:
-  # vite-plus>oxfmt が tinypool 2.1.0 を固定している（GHSA-5gmw-xhrv-c9v3 / GHSA-85c8-ppgw-ccpr、critical）
-  tinypool@^2: ^2.1.2
-  # vite-plus 0.2.x が vitest と @vitest/* を 4.1.9 に固定している。vite-plus 自体の修正版は 1.1.0（メジャー）なので、
-  # vitest 側だけ同じメジャーの直った版にそろえる（@vitest/browser GHSA-p63j-vcc4-9vmv critical、vitest / @vitest/mocker moderate）
-  vitest@^4: 4.1.12
-  "@vitest/browser@^4": 4.1.12
-  "@vitest/browser-preview@^4": 4.1.12
-  "@vitest/expect@^4": 4.1.12
-  "@vitest/mocker@^4": 4.1.12
-  "@vitest/pretty-format@^4": 4.1.12
-  "@vitest/runner@^4": 4.1.12
-  "@vitest/snapshot@^4": 4.1.12
-  "@vitest/spy@^4": 4.1.12
-  "@vitest/utils@^4": 4.1.12
+# vite-plus 1.x は vite の代わりに @voidzero-dev/vite-plus-core（版は 1.x）を vitest に渡す。
+# vitest 5 の peer（vite ^6 || ^7 || ^8）に版番号が合わないだけなので、vite-plus 配下の vitest に限って許す
+peerDependencyRules:
+  allowedVersions:
+    "vitest>vite": "*"
+    "@vitest/mocker>vite": "*"
