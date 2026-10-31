@@ -25,11 +25,11 @@ jobs:
       # prisma generate のための仮の値（DB接続はしない）
       DATABASE_URL: "file:./dev.db"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
 
-      - uses: pnpm/action-setup@v4 # package.json の packageManager を尊重
+      - uses: pnpm/action-setup@v6.1.0 # package.json の packageManager を尊重
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version: "26.12.1"
           cache: pnpm
@@ -45,7 +45,7 @@ jobs:
       # TypeDoc で docs-site/ を生成（bare `pnpm docs` は npm互換の組み込みdocsと衝突するため run を明示）
       - run: pnpm run docs:build
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: docs-site
 
@@ -57,4 +57,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5.0.1
